@@ -27,6 +27,8 @@ python3 -m http.server 8000
 2. В **Settings → Pages → Build and deployment → Source** выберите **GitHub Actions**.
 3. Запустите workflow **Publish GitHub Pages** во вкладке Actions или отправьте новый коммит в main.
 
+Workflow публикует статический сайт вместе с Service Worker. После успешного запуска адрес будет доступен в настройках Pages, обычно `https://jollu8.github.io/vocoby/`.
+
 Workflow проверит код, соберёт словарь и опубликует сайт. Адрес появится в результате deployment, обычно `https://<имя>.github.io/vocoby/`. Относительные пути работают и в подпапке репозитория.
 
 [Документация GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
