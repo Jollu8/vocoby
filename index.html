@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f3ed"><meta name="description" content="Учите английские слова, находя русские переводы. Короткие тренировки и сохранение прогресса.">
+  <title>Vocoby — слово за словом</title><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="header"><a class="brand" href="./"><span class="brand-icon">v.</span>vocoby<span class="brand-dot">↗</span></a><span class="header-note">АНГЛИЙСКИЙ · РУССКИЙ</span><span id="local-note" class="local-note">Прогресс на этом устройстве</span></header>
+<main>
+  <section class="intro"><div class="eyebrow"><span></span> МАЛЕНЬКИЕ ШАГИ. БОЛЬШЕ СЛОВ.</div><h1>Слово за словом.<br><span>И всё складывается.</span></h1><p>Найдите слово и его перевод. На месте собранной пары<br class="desktop"> появится новая — продолжайте в своём темпе.</p></section>
+  <div class="workspace">
+    <aside class="panel" aria-label="Подборка и прогресс">
+      <details id="collection-settings">
+        <summary><span>Настроить подборку</span><span id="selection-summary">Все уровни · A–Z</span></summary>
+        <div class="settings-content">
+          <div class="section-label">ВАША ПОДБОРКА</div><h2>Что будем учить?</h2>
+          <div class="filter-fields">
+            <div><label for="level">Сложность</label><select id="level"><option value="all">Все уровни</option></select></div>
+            <div><label for="letter">Первая буква</label><select id="letter"><option value="all">Весь алфавит</option></select></div>
+          </div>
+          <div class="collection-info"><span id="collection-count">Загружаем словарь…</span><small>Выберите уровень и начальную букву</small></div>
+                    <div class="collection-info"><span id="collection-count">Загружаем слова…</span><small>По умолчанию выбрана практическая база A1</small></div>
+          <button id="restart" class="secondary" type="button">Повторить подборку ↻</button>
+          <p class="hint">Подсказка: можно сначала выбрать перевод, а потом английское слово.</p>
+        </div>
+      </details>
+      <div class="progress-heading"><span>Собрано в подборке</span><strong id="progress-count">0 / 0</strong></div>
+      <progress id="progress" value="0" max="1" aria-label="Прогресс подборки"></progress>
+      <div class="learning-stats" aria-label="Статистика обучения">
+        <div><strong id="learned-total">0</strong><span>изучено всего</span></div>
+        <div><strong id="streak-count">0</strong><span>дней подряд</span></div>
+      </div>
+    </aside>
+    <section class="game" aria-label="Тренировка слов"><div class="game-header"><div><span class="section-label">ПРАКТИКА</span><h2>Найдите пару</h2></div><span class="session-score">✦ <span id="session-count">0</span> за сессию</span></div><div class="column-labels"><span>EN <small>АНГЛИЙСКИЙ</small></span><span>RU <small>РУССКИЙ</small></span></div><div id="board" class="board"><div id="english" class="word-column"></div><div id="russian" class="word-column"></div></div><div id="status" class="status" role="status" aria-live="polite">Загружаем слова…</div><button id="retry" class="secondary" hidden>Попробовать ещё раз</button><div class="game-footer"><span>01 — Выберите слово</span><span>02 — Найдите перевод</span><span>03 — Продолжайте</span></div></section>
+  </div>
+  <section class="dictionary-note"><div class="note-icon">Aa</div><div><h3>Словарь для ежедневной практики</h3><p><span id="total-count">…</span> слов и переводов. Новые слова из WikDict находятся в подборке «Без уровня». <a href="sources.html">Источники и лицензия CC BY-SA 4.0</a>.</p></div><span class="note-tag">WIKDICT</span></section>
+</main><footer><span>vocoby © <span id="year"></span></span><span>Немного практики каждый день.</span><span class="author-links"><a href="https://t.me/jollu8" target="_blank" rel="noopener noreferrer">Telegram</a><a href="https://github.com/Jollu8" target="_blank" rel="noopener noreferrer">GitHub автора</a></span></footer><script type="module" src="app.js"></script>
+</body></html>

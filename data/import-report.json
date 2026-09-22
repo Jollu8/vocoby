@@ -1,0 +1,36 @@
+{
+  "source_rows": 126267,
+  "rejected_rows": {
+    "english_not_short_lowercase_word": 18813,
+    "no_short_clean_russian_translation": 1125,
+    "not_marked_good": 40117,
+    "proper_noun": 9939
+  },
+  "wikdict_unique_words": 33554,
+  "source_url": "https://download.wikdict.com/dictionaries/sqlite/2_2026-06/en-ru.sqlite3",
+  "source_sha256": "3f65395883b996131c9b7a7b7b7c14c1b4458c892fae0050decd71dc0a3b4b0a",
+  "license": "CC-BY-SA-4.0",
+  "starter_words": 150,
+  "starter_overrides": 149,
+  "exported_words": 33551,
+  "levels": {
+    "A1": 400,
+    "A2": 400,
+    "B1": 400,
+    "B2": 400,
+    "ungraded": 31951
+  },
+  "csv_sha256": "60ae0e775f1b45c0bba85373d5bd3914a57dbd31a2700ea5c52716ddee2a0864",
+  "excluded_words": [
+    "a",
+    "aah",
+    "aardvark",
+    "ab"
+  ],
+  "frequency_promoted": 310,
+  "a1_curated": 41,
+  "a1_replacements": 41,
+  "level_expansions": {
+    "B2": 400
+  }
+}

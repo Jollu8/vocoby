@@ -1,0 +1,10 @@
+{
+  "name": "vocoby",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js && python3 -m unittest discover -s tests -p 'test_*.py'",
+    "build:dictionary": "python3 scripts/build_dictionary.py",
+    "start": "python3 -m http.server 8000"
+  }
+}
