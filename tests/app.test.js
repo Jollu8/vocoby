@@ -4,9 +4,23 @@ import assert from 'node:assert/strict';
 test('board keeps its ten buttons, shuffles translations, and stays playable during slow loading', async t => {
   t.mock.method(Math, 'random', () => 0);
   class Element {
-    constructor() { this.style = { setProperty(name, value) { this[name] = value; } }; this.listeners = {}; this.children = []; this.value = 'all'; this.textContent = ''; this.classList = { add() {} }; }
+    constructor() {
+      this.style = { setProperty(name, value) { this[name] = value; } };
+      this.listeners = {};
+      this.children = [];
+      this.value = 'all';
+      this.textContent = '';
+      this.attributes = {};
+      this.classList = {
+        classes: new Set(),
+        add(...names) { names.forEach(name => this.classes.add(name)); },
+        remove(...names) { names.forEach(name => this.classes.delete(name)); },
+        contains(name) { return this.classes.has(name); },
+      };
+    }
     addEventListener(name, callback) { this.listeners[name] = callback; }
-    setAttribute() {}
+    setAttribute(name, value) { this.attributes[name] = String(value); }
+    getAttribute(name) { return this.attributes[name]; }
     append(child) { this.children.push(child); }
     add(option) { this.children.push(option); }
     click() { if (!this.disabled) this.listeners.click?.(); }
@@ -55,7 +69,6 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   element('view-sphere').click();
   assert.equal(element('board').className, 'board sphere');
   assert.equal(element('game').className, 'game sphere-fullscreen');
-  assert.equal(element('exit-sphere').hidden, false);
   assert.equal(data.get('vocoby-view'), 'sphere');
   assert.equal(element('column-labels').hidden, true);
   const viewport = element('board-viewport');
@@ -86,9 +99,8 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   assert.equal(element('progress-count').textContent, '1 / 12');
   assert.equal(left[0].textContent, 'en-0-5');
   assert.notDeepEqual([...left, ...right].map(button => button.style['--sphere-x'] + button.style['--sphere-y']), initialPositions);
-  element('exit-sphere').click();
+  element('view-columns').click();
   assert.equal(element('game').className, 'game');
-  assert.equal(element('exit-sphere').hidden, true);
   assert.equal(element('board').className, 'board');
   assert.equal(element('progress-count').textContent, '1 / 12');
   assert.equal(data.get('vocoby-view'), 'columns');
@@ -189,4 +201,69 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   element('level').listeners.change();
   await wait(20);
   assert.equal(element('progress-count').textContent, '1 / 6', 'B2 progress survives switching');
+});
+
+test('the newest English selection stays active during the short match feedback', async () => {
+  const data = new Map();
+  class Element {
+    constructor() {
+      this.style = { setProperty(name, value) { this[name] = value; } };
+      this.listeners = {};
+      this.children = [];
+      this.value = 'all';
+      this.textContent = '';
+      this.attributes = {};
+      this.classList = {
+        classes: new Set(),
+        add(...names) { names.forEach(name => this.classes.add(name)); },
+        remove(...names) { names.forEach(name => this.classes.delete(name)); },
+        contains(name) { return this.classes.has(name); },
+      };
+    }
+    addEventListener(name, callback) { this.listeners[name] = callback; }
+    setAttribute(name, value) { this.attributes[name] = String(value); }
+    getAttribute(name) { return this.attributes[name]; }
+    append(child) { this.children.push(child); }
+    add(option) { this.children.push(option); }
+    click() { if (!this.disabled) this.listeners.click?.(); }
+  }
+  const elements = new Map();
+  const element = id => { if (!elements.has(id)) elements.set(id, new Element()); return elements.get(id); };
+  globalThis.window = { localStorage: { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) }, addEventListener() {} };
+  globalThis.document = {
+    getElementById: element, querySelector: element, addEventListener() {},
+    createElement() { return new Element(); },
+  };
+  globalThis.matchMedia = () => ({ matches: true, addEventListener() {} });
+  globalThis.Option = class { constructor(text, value) { this.text = text; this.value = value; } };
+  const chunks = [{ path: 'chunks/quick.json', revision: 'r1', count: 3, level: 'A1', letter: 'a' }];
+  const words = Array.from({ length: 3 }, (_, j) => ({ id: `w-${j}`, en: `en-${j}`, ru: `ru-${j}`, chunk: chunks[0] }));
+  globalThis.fetch = async path => ({ ok: true, json: async () => {
+    if (path === 'data/manifest.json') return { total: 3, levels: ['A1', 'B1'], chunks: [{ ...chunks[0], level: 'A1', path: 'chunks/legacy-a1.json' }, { ...chunks[0], level: 'B1', path: 'chunks/legacy-b1.json' }] };
+    if (path === 'data/most-1000/manifest.json') return { total: 0, chunks: [] };
+    if (path === 'data/a1-vocabden/manifest.json') return { total: 3, levels: ['A1'], chunks };
+    if (path === 'data/a2-user/manifest.json') return { total: 0, levels: ['A2'], chunks: [] };
+    if (path === 'data/b1-user/manifest.json') return { total: 0, levels: ['B1'], chunks: [] };
+    if (path === 'data/b2-user/manifest.json') return { total: 0, levels: ['B2'], chunks: [] };
+    if (path.includes('/quick.')) return words;
+    return words;
+  } });
+  await import('../app.js?quick-selection');
+  await new Promise(resolve => setTimeout(resolve, 100));
+  const left = element('english').children;
+  const right = element('russian').children;
+  assert.ok(left.length >= 2, 'board has enough English buttons');
+  assert.ok(right.length >= 2, 'board has enough Russian buttons');
+  left[0].click();
+  right.find(button => button.textContent === 'ru-0').click();
+  left[1].click();
+  assert.equal(left[1].getAttribute('aria-pressed'), 'true');
+  assert.equal(left[0].getAttribute('aria-pressed'), 'false');
+  await new Promise(resolve => setTimeout(resolve, 450));
+  assert.equal(left[1].getAttribute('aria-pressed'), 'true');
+  right.find(button => button.textContent === 'ru-1').click();
+  left[2].click();
+  right.find(button => button.textContent === 'ru-2').click();
+  await new Promise(resolve => setTimeout(resolve, 900));
+  assert.equal(element('progress-count').textContent, '3 / 3');
 });

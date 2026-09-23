@@ -17,6 +17,7 @@ const progress = new ProgressStore(storage);
 let boardView = 'columns';
 try { if (storage.getItem('vocoby-view') === 'sphere') boardView = 'sphere'; } catch {}
 let manifest, most1000, chunks = [], stream, active = Array(5).fill(null), right = Array(5).fill(null);
+let queuedMatch = null;
 let selected = null, busy = false, generation = 0, session = 0, completed = 0, total = 0;
 let pumping = null, saveScheduled = false, feedback = [];
 const statsKey = 'vocoby-study-stats-v1';
@@ -135,7 +136,6 @@ function setBoardView(view) {
   boardView = view;
   resetDomeTilt();
   $('game').className = `game${view === 'sphere' ? ' sphere-fullscreen' : ''}`;
-  $('exit-sphere').hidden = view !== 'sphere';
   $('board').className = `board${view === 'sphere' ? ' sphere' : ''}`;
   $('column-labels').hidden = view === 'sphere';
   const viewport = $('board-viewport');
@@ -207,7 +207,6 @@ function exitSphere() {
   setBoardView('columns');
   $('view-sphere').focus?.();
 }
-$('exit-sphere').addEventListener('click', exitSphere);
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && boardView === 'sphere') exitSphere();
 });
@@ -218,7 +217,7 @@ function render() {
       const text = word ? side === 'english' ? word.en : word.ru : '';
       if (button.textContent !== text) button.textContent = text;
       button.className = `word${word ? '' : ' empty'}${text.length > 20 ? ' long' : ''}`;
-      button.disabled = !word || busy;
+      button.disabled = !word || !!queuedMatch || feedback.some(item => item.side === side && item.id === word.id);
       const isSelected = !!word && selected?.side === side && selected.id === word.id;
       button.setAttribute('aria-pressed', String(isSelected));
       if (isSelected) button.classList.add('selected');
@@ -273,7 +272,7 @@ function replenish() {
 function start() {
   stream?.close();
   generation++;
-  pumping = null; selected = null; busy = false; feedback = [];
+  pumping = null; selected = null; queuedMatch = null; busy = false; feedback = [];
   active = Array(5).fill(null); right = Array(5).fill(null);
   const collection = $('level').value === 'most-1000' ? most1000 : manifest;
   chunks = collection.chunks.filter(chunk => ($('level').value === 'all' || chunk.level === $('level').value)
@@ -285,11 +284,16 @@ function start() {
   void replenish();
 }
 async function choose(side, id) {
-  if (busy) return;
+  if (queuedMatch || feedback.some(item => item.side === side && item.id === id)) return;
   if (!selected || selected.side === side) {
     selected = selected?.id === id && selected.side === side ? null : { side, id };
     render();
     if (selected) focusFirstAvailable(side === 'english' ? 'russian' : 'english');
+    return;
+  }
+  if (busy) {
+    queuedMatch = { side, id };
+    render();
     return;
   }
   const first = selected; selected = null; busy = true;
@@ -299,7 +303,8 @@ async function choose(side, id) {
   $('status').textContent = correct ? 'Верно! Ещё одно слово в копилке.' : 'Пока не совпало. Попробуйте другую пару.';
   await new Promise(resolve => setTimeout(resolve, correct ? 420 : 350));
   if (token !== generation) return;
-  feedback = []; busy = false;
+  feedback = [];
+  busy = false;
   if (correct) {
     const slot = active.findIndex(word => word?.id === id);
     const word = active[slot];
@@ -311,10 +316,19 @@ async function choose(side, id) {
     active[slot] = stream.take(active);
     syncRight();
     render();
+    playQueuedMatch();
     if (pumping) await pumping;
     if (token !== generation) return;
     void replenish();
-  } else render();
+  } else {
+    render();
+    playQueuedMatch();
+  }
+}
+function playQueuedMatch() {
+  const next = queuedMatch;
+  queuedMatch = null;
+  if (next) void choose(next.side, next.id);
 }
 async function init() {
   try {
