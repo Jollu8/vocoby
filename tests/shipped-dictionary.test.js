@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { ChunkStream, ProgressStore } from '../dictionary.js';
 
-for (const directory of ['data', 'data/most-1000']) {
+for (const directory of ['data', 'data/most-1000', 'data/a1-vocabden', 'data/a2-user', 'data/b1-user', 'data/b2-user']) {
 test(`${directory} is playable with bounded loading and unambiguous visible pairs`, async () => {
   const manifest = JSON.parse(await readFile(new URL(`../${directory}/manifest.json`, import.meta.url)));
   if (directory === 'data') assert.ok(manifest.total >= 30000);
-  else assert.equal(manifest.total, 1000);
+  else assert.equal(manifest.total, directory === 'data/a1-vocabden' ? 898 : directory === 'data/a2-user' ? 877 : ['data/b1-user', 'data/b2-user'].includes(directory) ? 394 : 1000);
   const progress = new ProgressStore({ getItem() { return null; }, setItem() {} });
   let requests = 0;
   const stream = new ChunkStream(manifest.chunks, progress, async path => {

@@ -47,3 +47,44 @@ Russian translations reuse the attributed Vocoby/WikDict dictionary where
 indicated in the CSV, with additional translations and corrections by Vocoby.
 Those additional translations are provided under CC BY-SA 4.0. Generated
 translation cards are in `most-1000/chunks/`; source attribution is in the CSV.
+
+## A1 — Vocabden collection
+
+English headwords and expressions in `a1-vocabden.csv` were selected from
+https://vocabden.com/en/english-a1-word-list (retrieved 2026-09-23).
+The page's 1,073 part-of-speech entries become 898 distinct lowercase headwords.
+Only headwords are included, without definitions, examples or audio. The A1
+classification follows Vocabden; no endorsement or CC BY-SA license for
+Vocabden's own content is asserted.
+
+Russian translations reuse Vocoby/WikDict entries with source attribution in
+the CSV. Additional translations and corrections by Vocoby are made available
+under CC BY-SA 4.0. Generated cards are in `a1-vocabden/chunks/`. This collection
+replaces the legacy A1 cards in the application; other levels are unchanged.
+
+## A2 — user-provided collection
+
+`a2-user.md` is the list supplied by the repository owner. `a2-user.csv` and
+`a2-user/chunks/` contain its English words and Russian translations, with
+1,000 numbered entries merged into 877 unique lowercase headwords. Alternative
+translations from repeated entries are retained. The A2 label follows the
+supplied document. These translations are not attributed to WikDict; no
+additional license for the supplied list is asserted here.
+
+## B1 — user-provided collection
+
+`b1-user.md` is the list supplied by the repository owner. `b1-user.csv` and
+`b1-user/chunks/` contain its English words and Russian translations, with
+400 numbered entries merged into 394 unique lowercase headwords. Alternative
+translations from repeated entries are retained. The B1 label follows the
+supplied document. These translations are not attributed to WikDict; no
+additional license for the supplied list is asserted here.
+
+## B2 — user-provided collection
+
+`b2-user.md` is the list supplied by the repository owner. `b2-user.csv` and
+`b2-user/chunks/` contain its English words and Russian translations, with
+400 numbered entries merged into 394 unique lowercase headwords. Alternative
+translations from repeated entries are retained. The B2 label follows the
+supplied document. These translations are not attributed to WikDict; no
+additional license for the supplied list is asserted here.

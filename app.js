@@ -1,7 +1,16 @@
 import { shuffle } from './engine.js';
 import { ChunkStream, ProgressStore } from './dictionary.js';
 const $ = id => document.getElementById(id);
-const levelLabel = level => level === 'most-1000' ? 'Most 1000' : level === 'ungraded' ? 'Без уровня' : level === 'A1' ? 'A1 · база 400' : level === 'A2' ? 'A2 · база 400' : level === 'B1' ? 'B1 · база 400' : level === 'B2' ? 'B2 · база 400' : level;
+function levelLabel(level) {
+  if (level === 'most-1000') return 'Most 1000';
+  if (level === 'ungraded') return 'Без уровня';
+  if (['A1', 'A2', 'B1', 'B2'].includes(level)) {
+    const count = manifest.chunks.filter(chunk => chunk.level === level)
+      .reduce((sum, chunk) => sum + chunk.count, 0);
+    return `${level} · ${count} слов`;
+  }
+  return level;
+}
 let storage;
 try { storage = window.localStorage; } catch { storage = { getItem() { throw Error(); }, setItem() { throw Error(); } }; }
 const progress = new ProgressStore(storage);
@@ -199,9 +208,22 @@ async function choose(side, id) {
 async function init() {
   try {
     if (globalThis.navigator?.serviceWorker) void navigator.serviceWorker.register('./sw.js');
-    [manifest, most1000] = await Promise.all([
-      getJSON('data/manifest.json'), getJSON('data/most-1000/manifest.json')
+    const [base, most, a1, a2, b1, b2] = await Promise.all([
+      getJSON('data/manifest.json'), getJSON('data/most-1000/manifest.json'),
+      getJSON('data/a1-vocabden/manifest.json'), getJSON('data/a2-user/manifest.json'),
+      getJSON('data/b1-user/manifest.json'), getJSON('data/b2-user/manifest.json')
     ]);
+    // Replace the legacy A1–B2 collections; keep other levels and their progress keys.
+    const currentChunks = [
+      ...base.chunks.filter(chunk => !['A1', 'A2', 'B1', 'B2'].includes(chunk.level)),
+      ...a1.chunks.map(chunk => ({ ...chunk, path: `a1-vocabden/${chunk.path}` })),
+      ...a2.chunks.map(chunk => ({ ...chunk, path: `a2-user/${chunk.path}` })),
+      ...b1.chunks.map(chunk => ({ ...chunk, path: `b1-user/${chunk.path}` })),
+      ...b2.chunks.map(chunk => ({ ...chunk, path: `b2-user/${chunk.path}` }))
+    ];
+    manifest = { ...base, chunks: currentChunks,
+      total: currentChunks.reduce((sum, chunk) => sum + chunk.count, 0) };
+    most1000 = most;
     most1000.chunks = most1000.chunks.map(chunk => ({
       ...chunk, level: 'most-1000', path: `most-1000/${chunk.path}`
     }));

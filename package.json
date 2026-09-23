@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.js && python3 -m unittest discover -s tests -p 'test_*.py'",
-    "build:dictionary": "python3 scripts/build_dictionary.py && python3 scripts/build_dictionary.py data/most-1000.csv --output data/most-1000",
+    "build:dictionary": "python3 scripts/build_dictionary.py && python3 scripts/build_dictionary.py data/most-1000.csv --output data/most-1000 && python3 scripts/build_dictionary.py data/a1-vocabden.csv --output data/a1-vocabden && python3 scripts/build_dictionary.py data/a2-user.csv --output data/a2-user && python3 scripts/build_dictionary.py data/b1-user.csv --output data/b1-user && python3 scripts/build_dictionary.py data/b2-user.csv --output data/b2-user",
     "start": "python3 -m http.server 8000"
   }
 }

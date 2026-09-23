@@ -1,7 +1,8 @@
-const CACHE = 'vocoby-shell-v4';
+const CACHE = 'vocoby-shell-v8';
 const SHELL = [
   './', './index.html', './styles.css', './app.js', './dictionary.js', './engine.js',
-  './sources.html', './data/manifest.json', './data/most-1000/manifest.json'
+  './sources.html', './data/manifest.json', './data/most-1000/manifest.json',
+  './data/a1-vocabden/manifest.json', './data/a2-user/manifest.json', './data/b1-user/manifest.json', './data/b2-user/manifest.json'
 ];
 
 self.addEventListener('install', event => {

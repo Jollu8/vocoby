@@ -1,0 +1,170 @@
+{
+  "version": 2,
+  "total": 394,
+  "levels": [
+    "B2"
+  ],
+  "chunks": [
+    {
+      "level": "B2",
+      "letter": "a",
+      "path": "chunks/b2-a-001.json",
+      "count": 52,
+      "revision": "ff8011120a835243"
+    },
+    {
+      "level": "B2",
+      "letter": "b",
+      "path": "chunks/b2-b-001.json",
+      "count": 14,
+      "revision": "7b4c69439f28468f"
+    },
+    {
+      "level": "B2",
+      "letter": "c",
+      "path": "chunks/b2-c-001.json",
+      "count": 57,
+      "revision": "885ee9bbe71fb5b2"
+    },
+    {
+      "level": "B2",
+      "letter": "d",
+      "path": "chunks/b2-d-001.json",
+      "count": 32,
+      "revision": "f5fc4356edf25392"
+    },
+    {
+      "level": "B2",
+      "letter": "e",
+      "path": "chunks/b2-e-001.json",
+      "count": 25,
+      "revision": "d9b2eb42374d1128"
+    },
+    {
+      "level": "B2",
+      "letter": "f",
+      "path": "chunks/b2-f-001.json",
+      "count": 13,
+      "revision": "ee443db6db794a69"
+    },
+    {
+      "level": "B2",
+      "letter": "g",
+      "path": "chunks/b2-g-001.json",
+      "count": 16,
+      "revision": "d8d726508f91beaa"
+    },
+    {
+      "level": "B2",
+      "letter": "h",
+      "path": "chunks/b2-h-001.json",
+      "count": 5,
+      "revision": "110b6c309e18b9d5"
+    },
+    {
+      "level": "B2",
+      "letter": "i",
+      "path": "chunks/b2-i-001.json",
+      "count": 46,
+      "revision": "6740f9a52a362d4e"
+    },
+    {
+      "level": "B2",
+      "letter": "j",
+      "path": "chunks/b2-j-001.json",
+      "count": 1,
+      "revision": "db9a6e8cdb7fa105"
+    },
+    {
+      "level": "B2",
+      "letter": "k",
+      "path": "chunks/b2-k-001.json",
+      "count": 1,
+      "revision": "9874b6c512dfcb22"
+    },
+    {
+      "level": "B2",
+      "letter": "l",
+      "path": "chunks/b2-l-001.json",
+      "count": 9,
+      "revision": "a12eca7a31851108"
+    },
+    {
+      "level": "B2",
+      "letter": "m",
+      "path": "chunks/b2-m-001.json",
+      "count": 8,
+      "revision": "4fb0311665764dc6"
+    },
+    {
+      "level": "B2",
+      "letter": "n",
+      "path": "chunks/b2-n-001.json",
+      "count": 3,
+      "revision": "f945100ca42b9559"
+    },
+    {
+      "level": "B2",
+      "letter": "o",
+      "path": "chunks/b2-o-001.json",
+      "count": 14,
+      "revision": "e9d86d805059c642"
+    },
+    {
+      "level": "B2",
+      "letter": "p",
+      "path": "chunks/b2-p-001.json",
+      "count": 34,
+      "revision": "7b3c5953075daa79"
+    },
+    {
+      "level": "B2",
+      "letter": "q",
+      "path": "chunks/b2-q-001.json",
+      "count": 2,
+      "revision": "2b7588cd3685c0a6"
+    },
+    {
+      "level": "B2",
+      "letter": "r",
+      "path": "chunks/b2-r-001.json",
+      "count": 23,
+      "revision": "56842028920341a9"
+    },
+    {
+      "level": "B2",
+      "letter": "s",
+      "path": "chunks/b2-s-001.json",
+      "count": 13,
+      "revision": "cdee353ec2607781"
+    },
+    {
+      "level": "B2",
+      "letter": "t",
+      "path": "chunks/b2-t-001.json",
+      "count": 15,
+      "revision": "b25e1915bde57ac0"
+    },
+    {
+      "level": "B2",
+      "letter": "u",
+      "path": "chunks/b2-u-001.json",
+      "count": 3,
+      "revision": "e19c75e989ae89e6"
+    },
+    {
+      "level": "B2",
+      "letter": "v",
+      "path": "chunks/b2-v-001.json",
+      "count": 5,
+      "revision": "159b460782d0ff16"
+    },
+    {
+      "level": "B2",
+      "letter": "w",
+      "path": "chunks/b2-w-001.json",
+      "count": 3,
+      "revision": "039ca351b6cf4f7a"
+    }
+  ]
+}
