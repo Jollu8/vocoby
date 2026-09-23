@@ -37,7 +37,8 @@ button, select, summary { touch-action: manipulation; }
   .settings-content .section-label, .settings-content h2, .hint, .collection-info small { display: none; }
   .filter-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   label { font-size: 12px; margin: 8px 0; }
-  select { font-size: 16px; min-height: 48px; padding: 10px 8px; }
+  select { font-size: 14px; min-height: 44px; padding: 8px; }
+  select option { font-size: 13px; }
   .collection-info { font-size: 12px; padding: 8px 0 0; border: 0; }
   .secondary { min-height: 44px; font-size: 13px; }
   .settings-content .secondary { margin-top: 12px; }
