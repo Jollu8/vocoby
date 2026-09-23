@@ -1,4 +1,4 @@
-const CACHE = 'vocoby-shell-v1';
+const CACHE = 'vocoby-shell-v2';
 const SHELL = [
   './', './index.html', './styles.css', './app.js', './dictionary.js', './engine.js',
   './sources.html', './data/manifest.json'

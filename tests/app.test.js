@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-test('board keeps its ten buttons, replaces matches, and stays playable during slow loading', async () => {
+test('board keeps its ten buttons, shuffles translations, and stays playable during slow loading', async t => {
+  t.mock.method(Math, 'random', () => 0);
   class Element {
     constructor() { this.listeners = {}; this.children = []; this.value = 'all'; this.textContent = ''; this.classList = { add() {} }; }
     addEventListener(name, callback) { this.listeners[name] = callback; }
@@ -41,9 +42,17 @@ test('board keeps its ten buttons, replaces matches, and stays playable during s
     right.find(button => button.textContent === translation).click();
     await wait(450);
   }
+  const previousLeft = left.map(button => button.textContent);
+  const previousRight = right.map(button => button.textContent);
+  Math.random.mock.mockImplementation(() => 0.5);
   await match(left[0]);
   assert.equal(element('progress-count').textContent, '1 / 12');
   assert.equal(left[0].textContent, 'en-0-5');
+  assert.deepEqual(left.slice(1).map(button => button.textContent), previousLeft.slice(1));
+  assert.ok(right.some((button, slot) => previousRight.includes(button.textContent)
+    && button.textContent !== previousRight[slot]), 'existing translations move after a match');
+  assert.deepEqual(right.map(button => button.textContent).sort(),
+    left.map(button => button.textContent.replace('en-', 'ru-')).sort());
   await match(left[0]);
   assert.equal(element('progress-count').textContent, '2 / 12');
   assert.equal(left.filter(button => !button.disabled).length, 4);

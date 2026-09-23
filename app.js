@@ -119,10 +119,8 @@ function showError() {
   $('retry').hidden = false;
 }
 function syncRight() {
-  const displayed = new Set(right.filter(Boolean).map(word => word.id));
-  const newWords = shuffle(active.filter(word => word && !displayed.has(word.id)));
-  const emptySlots = shuffle(right.flatMap((word, slot) => word ? [] : [slot]));
-  for (const word of newWords) right[emptySlots.pop()] = word;
+  // Shuffle the whole translation column so a replacement's position isn't a hint.
+  right = shuffle(active);
 }
 function replenish() {
   if (pumping) return pumping;
@@ -134,7 +132,7 @@ function replenish() {
         await current.prepare();
         if (token !== generation) return;
         active[slot] = current.take(active);
-        syncRight();
+        if (active[slot]) syncRight();
         render();
         // Do not scan other chunks to resolve identical translations.
         if (!active[slot] && !current.done) break;
