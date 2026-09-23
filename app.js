@@ -1,11 +1,11 @@
 import { shuffle } from './engine.js';
 import { ChunkStream, ProgressStore } from './dictionary.js';
 const $ = id => document.getElementById(id);
-const levelLabel = level => level === 'ungraded' ? 'Без уровня' : level === 'A1' ? 'A1 · база 400' : level === 'A2' ? 'A2 · база 400' : level === 'B1' ? 'B1 · база 400' : level === 'B2' ? 'B2 · база 400' : level;
+const levelLabel = level => level === 'most-1000' ? 'Most 1000' : level === 'ungraded' ? 'Без уровня' : level === 'A1' ? 'A1 · база 400' : level === 'A2' ? 'A2 · база 400' : level === 'B1' ? 'B1 · база 400' : level === 'B2' ? 'B2 · база 400' : level;
 let storage;
 try { storage = window.localStorage; } catch { storage = { getItem() { throw Error(); }, setItem() { throw Error(); } }; }
 const progress = new ProgressStore(storage);
-let manifest, chunks = [], stream, active = Array(5).fill(null), right = Array(5).fill(null);
+let manifest, most1000, chunks = [], stream, active = Array(5).fill(null), right = Array(5).fill(null);
 let selected = null, busy = false, generation = 0, session = 0, completed = 0, total = 0;
 let pumping = null, saveScheduled = false, feedback = [];
 const statsKey = 'vocoby-study-stats-v1';
@@ -42,7 +42,7 @@ function yesterday(day) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 function updateStats() {
-  const learned = manifest ? manifest.chunks.reduce((sum, chunk) => sum + progress.count(chunk), 0) : 0;
+  const learned = manifest ? [...manifest.chunks, ...most1000.chunks].reduce((sum, chunk) => sum + progress.count(chunk), 0) : 0;
   $('learned-total').textContent = learned;
   $('streak-count').textContent = readStats().streak;
 }
@@ -155,7 +155,8 @@ function start() {
   generation++;
   pumping = null; selected = null; busy = false; feedback = [];
   active = Array(5).fill(null); right = Array(5).fill(null);
-  chunks = manifest.chunks.filter(chunk => ($('level').value === 'all' || chunk.level === $('level').value)
+  const collection = $('level').value === 'most-1000' ? most1000 : manifest;
+  chunks = collection.chunks.filter(chunk => ($('level').value === 'all' || chunk.level === $('level').value)
     && ($('letter').value === 'all' || chunk.letter === $('letter').value));
   total = chunks.reduce((sum, chunk) => sum + chunk.count, 0);
   completed = chunks.reduce((sum, chunk) => sum + progress.count(chunk), 0);
@@ -198,10 +199,19 @@ async function choose(side, id) {
 async function init() {
   try {
     if (globalThis.navigator?.serviceWorker) void navigator.serviceWorker.register('./sw.js');
-    manifest = await getJSON('data/manifest.json');
+    [manifest, most1000] = await Promise.all([
+      getJSON('data/manifest.json'), getJSON('data/most-1000/manifest.json')
+    ]);
+    most1000.chunks = most1000.chunks.map(chunk => ({
+      ...chunk, level: 'most-1000', path: `most-1000/${chunk.path}`
+    }));
     $('total-count').textContent = manifest.total;
-    for (const level of manifest.levels) $('level').add(new Option(levelLabel(level), level));
-    for (const letter of [...new Set(manifest.chunks.map(chunk => chunk.letter))].sort()) $('letter').add(new Option(letter.toUpperCase(), letter));
+    for (const level of ['most-1000', 'A1', 'A2', 'B1', 'B2', 'ungraded']) {
+      if (level === 'most-1000' || manifest.levels.includes(level)) {
+        $('level').add(new Option(levelLabel(level), level));
+      }
+    }
+    for (const letter of [...new Set([...manifest.chunks, ...most1000.chunks].map(chunk => chunk.letter))].sort()) $('letter').add(new Option(letter.toUpperCase(), letter));
     if (manifest.levels.includes('A1')) $('level').value = 'A1';
     start();
   } catch { showError(); }

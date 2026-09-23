@@ -34,3 +34,16 @@ translations may be specialized, ambiguous, dated or unsuitable for some context
 No endorsement by WikDict, Wiktionary or DBnary is implied.
 
 The repository's root LICENSE applies to software, not to this dictionary data.
+
+## most 1000 collection
+
+The English word selection in `most-1000.csv` comes from Vocabulary.com,
+“The Vocabulary.com Top 1000”: https://www.vocabulary.com/lists/52473
+(retrieved 2026-09-23). Only the 1,000 headwords are included, without their
+definitions or example sentences. No endorsement by Vocabulary.com is implied.
+This attribution does not assert that Vocabulary.com's content is CC BY-SA.
+
+Russian translations reuse the attributed Vocoby/WikDict dictionary where
+indicated in the CSV, with additional translations and corrections by Vocoby.
+Those additional translations are provided under CC BY-SA 4.0. Generated
+translation cards are in `most-1000/chunks/`; source attribution is in the CSV.

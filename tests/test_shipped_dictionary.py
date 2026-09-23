@@ -8,6 +8,22 @@ from scripts.build_dictionary import build
 
 
 class ShippedDictionaryTests(unittest.TestCase):
+    def test_most_1000_is_complete_and_reproducible(self):
+        data = Path(__file__).resolve().parents[1] / 'data'
+        with (data / 'most-1000.csv').open(encoding='utf-8') as stream:
+            rows = list(csv.DictReader(stream))
+        self.assertEqual(len(rows), 1000)
+        self.assertEqual(len({row['en'] for row in rows}), 1000)
+        self.assertTrue(all(row['ru'] and row['source_url'] for row in rows))
+        self.assertEqual(rows[0]['en'], 'consider')
+        self.assertEqual(rows[-1]['en'], 'bemused')
+        manifest = json.loads((data / 'most-1000/manifest.json').read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertEqual(build(data / 'most-1000.csv', directory), manifest)
+            for chunk in manifest['chunks']:
+                self.assertEqual((data / 'most-1000' / chunk['path']).read_bytes(),
+                                 (Path(directory) / chunk['path']).read_bytes())
+
     def test_real_export_matches_report_and_generated_chunks(self):
         data = Path(__file__).resolve().parents[1] / 'data'
         report = json.loads((data / 'import-report.json').read_text())

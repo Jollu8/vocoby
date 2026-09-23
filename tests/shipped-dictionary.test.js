@@ -3,14 +3,16 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { ChunkStream, ProgressStore } from '../dictionary.js';
 
-test('entire real dictionary is playable with bounded loading and unambiguous visible pairs', async () => {
-  const manifest = JSON.parse(await readFile(new URL('../data/manifest.json', import.meta.url)));
-  assert.ok(manifest.total >= 30000);
+for (const directory of ['data', 'data/most-1000']) {
+test(`${directory} is playable with bounded loading and unambiguous visible pairs`, async () => {
+  const manifest = JSON.parse(await readFile(new URL(`../${directory}/manifest.json`, import.meta.url)));
+  if (directory === 'data') assert.ok(manifest.total >= 30000);
+  else assert.equal(manifest.total, 1000);
   const progress = new ProgressStore({ getItem() { return null; }, setItem() {} });
   let requests = 0;
   const stream = new ChunkStream(manifest.chunks, progress, async path => {
     requests++;
-    return JSON.parse(await readFile(new URL(`../${path.split('?')[0]}`, import.meta.url)));
+    return JSON.parse(await readFile(new URL(`../${path.split('?')[0].replace(/^data/, directory)}`, import.meta.url)));
   });
   const active = [], matched = new Set();
   while (!stream.done || active.length) {
@@ -32,3 +34,4 @@ test('entire real dictionary is playable with bounded loading and unambiguous vi
   assert.equal(matched.size, manifest.total);
   assert.equal(requests, manifest.chunks.length);
 });
+}

@@ -8,7 +8,7 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
     addEventListener(name, callback) { this.listeners[name] = callback; }
     setAttribute() {}
     append(child) { this.children.push(child); }
-    add() {}
+    add(option) { this.children.push(option); }
     click() { if (!this.disabled) this.listeners.click?.(); }
   }
   const elements = new Map();
@@ -21,12 +21,13 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
     createElement() { buttonsCreated++; return new Element(); },
   };
   globalThis.matchMedia = () => ({ matches: true, addEventListener() {} });
-  globalThis.Option = class {};
+  globalThis.Option = class { constructor(text, value) { this.text = text; this.value = value; } };
   const chunks = [0, 1].map(i => ({ path: `chunks/${i}.json`, revision: 'r1', count: 6, level: 'A1', letter: 'a' }));
   const words = i => Array.from({ length: 6 }, (_, j) => ({ id: `${i}-${j}`, en: `en-${i}-${j}`, ru: `ru-${i}-${j}` }));
   let releaseNext;
   globalThis.fetch = async path => ({ ok: true, json: async () => {
     if (path === 'data/manifest.json') return { total: 12, levels: ['A1'], chunks };
+    if (path === 'data/most-1000/manifest.json') return { total: 6, chunks: [chunks[0]] };
     if (path.includes('/0.')) return words(0);
     return new Promise(resolve => { releaseNext = () => resolve(words(1)); });
   } });
@@ -65,4 +66,33 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   await match(left.find(button => !button.disabled));
   assert.equal(element('progress-count').textContent, '4 / 12');
   assert.equal(buttonsCreated, 10);
+  assert.ok(element('level').children.some(option => option.value === 'most-1000' && option.text === 'Most 1000'));
+  element('level').value = 'most-1000';
+  element('level').listeners.change();
+  await wait(20);
+  assert.equal(element('progress-count').textContent, '0 / 6', 'collection has independent progress');
+  assert.equal(element('selection-summary').textContent, 'Most 1000 · A–Z');
+  await match(left[0]);
+  assert.equal(element('progress-count').textContent, '1 / 6');
+  element('letter').value = 'z';
+  element('letter').listeners.change();
+  await wait(20);
+  assert.equal(element('progress-count').textContent, '0 / 0');
+  element('letter').value = 'all';
+  element('level').value = 'all';
+  element('level').listeners.change();
+  await wait(20);
+  assert.equal(element('progress-count').textContent, '4 / 12', 'all levels excludes the separate collection');
+  element('level').value = 'most-1000';
+  element('level').listeners.change();
+  await wait(20);
+  assert.equal(element('progress-count').textContent, '1 / 6', 'collection progress survives switching');
+  window.confirm = () => true;
+  element('restart').click();
+  await wait(20);
+  assert.equal(element('progress-count').textContent, '0 / 6');
+  element('level').value = 'all';
+  element('level').listeners.change();
+  await wait(20);
+  assert.equal(element('progress-count').textContent, '4 / 12', 'collection reset preserves main progress');
 });
