@@ -14,6 +14,8 @@ function levelLabel(level) {
 let storage;
 try { storage = window.localStorage; } catch { storage = { getItem() { throw Error(); }, setItem() { throw Error(); } }; }
 const progress = new ProgressStore(storage);
+let boardView = 'columns';
+try { if (storage.getItem('vocoby-view') === 'sphere') boardView = 'sphere'; } catch {}
 let manifest, most1000, chunks = [], stream, active = Array(5).fill(null), right = Array(5).fill(null);
 let selected = null, busy = false, generation = 0, session = 0, completed = 0, total = 0;
 let pumping = null, saveScheduled = false, feedback = [];
@@ -93,6 +95,7 @@ for (const side of ['english', 'russian']) {
   cards[side] = Array.from({ length: 5 }, (_, slot) => {
     const button = document.createElement('button');
     button.type = 'button';
+    button.setAttribute('lang', side === 'english' ? 'en' : 'ru');
     button.addEventListener('click', () => {
       const word = (side === 'english' ? active : right)[slot];
       if (word) void choose(side, word.id);
@@ -101,6 +104,113 @@ for (const side of ['english', 'russian']) {
     return button;
   });
 }
+// Separate, non-overlapping positions for desktop and narrow screens.
+const spherePositions = [[36, 20], [64, 20], [22, 40], [50, 40], [78, 40],
+  [22, 60], [50, 60], [78, 60], [36, 80], [64, 80]];
+const mobileSpherePositions = [[50, 10], [30, 26], [70, 26], [30, 42], [70, 42],
+  [30, 58], [70, 58], [30, 74], [70, 74], [50, 90]];
+function setDomePosition(button, x, y, prefix) {
+  const nx = (x - 50) / 50, ny = (y - 50) / 50;
+  const depth = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+  button.style.setProperty(`${prefix}-depth`, `${(depth * 32).toFixed(2)}px`);
+  button.style.setProperty(`${prefix}-scale`, (0.88 + depth * 0.1).toFixed(3));
+  button.style.setProperty(`${prefix}-rx`, `${(-ny * 14).toFixed(2)}deg`);
+  button.style.setProperty(`${prefix}-ry`, `${(nx * 16).toFixed(2)}deg`);
+}
+function scatterWords() {
+  const positions = shuffle(Array.from({ length: 10 }, (_, index) => index));
+  [...cards.english, ...cards.russian].forEach((button, index) => {
+    const slot = positions[index];
+    const [x, y] = spherePositions[slot];
+    button.style.setProperty('--sphere-x', `${x}%`);
+    button.style.setProperty('--sphere-y', `${y}%`);
+    const [mobileX, mobileY] = mobileSpherePositions[slot];
+    button.style.setProperty('--sphere-mobile-x', `${mobileX}%`);
+    button.style.setProperty('--sphere-mobile-y', `${mobileY}%`);
+    setDomePosition(button, x, y, '--dome');
+    setDomePosition(button, mobileX, mobileY, '--mobile-dome');
+  });
+}
+function setBoardView(view) {
+  boardView = view;
+  resetDomeTilt();
+  $('game').className = `game${view === 'sphere' ? ' sphere-fullscreen' : ''}`;
+  $('exit-sphere').hidden = view !== 'sphere';
+  $('board').className = `board${view === 'sphere' ? ' sphere' : ''}`;
+  $('column-labels').hidden = view === 'sphere';
+  const viewport = $('board-viewport');
+  viewport.scrollLeft = view === 'sphere' ? Math.max(0, ((viewport.scrollWidth || 0) - (viewport.clientWidth || 0)) / 2) : 0;
+  viewport.scrollTop = view === 'sphere' ? Math.max(0, ((viewport.scrollHeight || 0) - (viewport.clientHeight || 0)) / 2) : 0;
+  for (const name of ['columns', 'sphere']) {
+    $(`view-${name}`).setAttribute('aria-pressed', String(name === view));
+  }
+  try { storage.setItem('vocoby-view', view); } catch {}
+}
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+function resetDomeTilt() {
+  $('board').style.setProperty('--tilt-x', '0deg');
+  $('board').style.setProperty('--tilt-y', '0deg');
+}
+function tiltDome(event) {
+  if (boardView !== 'sphere' || reducedMotion.matches || selected || busy) return;
+  const bounds = $('board').getBoundingClientRect();
+  if (!bounds.width || !bounds.height) return;
+  const x = Math.max(-1, Math.min(1, (event.clientX - bounds.left) / bounds.width * 2 - 1));
+  const y = Math.max(-1, Math.min(1, (event.clientY - bounds.top) / bounds.height * 2 - 1));
+  $('board').style.setProperty('--tilt-x', `${(-y * 3).toFixed(2)}deg`);
+  $('board').style.setProperty('--tilt-y', `${(x * 3).toFixed(2)}deg`);
+}
+$('board').addEventListener('pointermove', tiltDome);
+for (const event of ['pointerleave', 'pointerup', 'pointercancel']) {
+  $('board').addEventListener(event, resetDomeTilt);
+}
+reducedMotion.addEventListener('change', resetDomeTilt);
+const viewport = $('board-viewport');
+let drag = null, dragged = false;
+viewport.addEventListener('pointerdown', event => {
+  if (boardView !== 'sphere' || event.button !== 0 || event.isPrimary === false) return;
+  dragged = false;
+  drag = { id: event.pointerId, x: event.clientX, y: event.clientY,
+    left: viewport.scrollLeft, top: viewport.scrollTop };
+});
+viewport.addEventListener('pointermove', event => {
+  if (!drag || event.pointerId !== drag.id) return;
+  const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
+  if (!dragged && Math.hypot(dx, dy) < 6) return;
+  if (!dragged) viewport.setPointerCapture(event.pointerId);
+  dragged = true;
+  viewport.style.cursor = 'grabbing';
+  viewport.scrollLeft = drag.left - dx;
+  viewport.scrollTop = drag.top - dy;
+});
+function stopDragging(event) {
+  if (!drag || event.pointerId !== drag.id) return;
+  drag = null;
+  viewport.style.cursor = '';
+  if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+}
+for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+  viewport.addEventListener(name, stopDragging);
+}
+viewport.addEventListener('click', event => {
+  if (dragged && event.detail !== 0) {
+    event.preventDefault();
+    event.stopPropagation();
+    dragged = false;
+  }
+}, true);
+scatterWords();
+setBoardView(boardView);
+$('view-columns').addEventListener('click', () => setBoardView('columns'));
+$('view-sphere').addEventListener('click', () => setBoardView('sphere'));
+function exitSphere() {
+  setBoardView('columns');
+  $('view-sphere').focus?.();
+}
+$('exit-sphere').addEventListener('click', exitSphere);
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && boardView === 'sphere') exitSphere();
+});
 function render() {
   for (const [side, values] of [['english', active], ['russian', right]]) {
     values.forEach((word, slot) => {
@@ -130,6 +240,7 @@ function showError() {
 function syncRight() {
   // Shuffle the whole translation column so a replacement's position isn't a hint.
   right = shuffle(active);
+  if (boardView === 'sphere') scatterWords();
 }
 function replenish() {
   if (pumping) return pumping;

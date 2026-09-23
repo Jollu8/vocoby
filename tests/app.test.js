@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 test('board keeps its ten buttons, shuffles translations, and stays playable during slow loading', async t => {
   t.mock.method(Math, 'random', () => 0);
   class Element {
-    constructor() { this.listeners = {}; this.children = []; this.value = 'all'; this.textContent = ''; this.classList = { add() {} }; }
+    constructor() { this.style = { setProperty(name, value) { this[name] = value; } }; this.listeners = {}; this.children = []; this.value = 'all'; this.textContent = ''; this.classList = { add() {} }; }
     addEventListener(name, callback) { this.listeners[name] = callback; }
     setAttribute() {}
     append(child) { this.children.push(child); }
@@ -52,12 +52,46 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
     right.find(button => button.textContent === translation).click();
     await wait(450);
   }
+  element('view-sphere').click();
+  assert.equal(element('board').className, 'board sphere');
+  assert.equal(element('game').className, 'game sphere-fullscreen');
+  assert.equal(element('exit-sphere').hidden, false);
+  assert.equal(data.get('vocoby-view'), 'sphere');
+  assert.equal(element('column-labels').hidden, true);
+  const viewport = element('board-viewport');
+  viewport.scrollLeft = 200; viewport.scrollTop = 200;
+  viewport.setPointerCapture = () => {};
+  viewport.hasPointerCapture = () => false;
+  viewport.listeners.pointerdown({ button: 0, pointerId: 1, clientX: 100, clientY: 100 });
+  viewport.listeners.pointermove({ pointerId: 1, clientX: 140, clientY: 130 });
+  assert.equal(viewport.scrollLeft, 160);
+  assert.equal(viewport.scrollTop, 170);
+  viewport.listeners.pointerup({ pointerId: 1 });
+  let blockedDragClick = false;
+  viewport.listeners.click({ detail: 1, preventDefault() {}, stopPropagation() { blockedDragClick = true; } });
+  assert.equal(blockedDragClick, true, 'dragging does not select a word');
+  const initialPositions = [...left, ...right].map(button => button.style['--sphere-x'] + button.style['--sphere-y']);
+  assert.equal(new Set(initialPositions).size, 10);
+  const depths = [...left, ...right].map(button => parseFloat(button.style['--dome-depth']));
+  assert.ok(depths.every(depth => depth >= 0 && depth <= 32));
+  assert.ok(new Set(depths).size > 1, 'dome has different depths');
+  for (const button of [...left, ...right]) {
+    assert.ok(Number.isFinite(parseFloat(button.style['--mobile-dome-rx'])));
+    assert.ok(parseFloat(button.style['--dome-scale']) >= 0.88);
+  }
   const previousLeft = left.map(button => button.textContent);
   const previousRight = right.map(button => button.textContent);
   Math.random.mock.mockImplementation(() => 0.5);
   await match(left[0]);
   assert.equal(element('progress-count').textContent, '1 / 12');
   assert.equal(left[0].textContent, 'en-0-5');
+  assert.notDeepEqual([...left, ...right].map(button => button.style['--sphere-x'] + button.style['--sphere-y']), initialPositions);
+  element('exit-sphere').click();
+  assert.equal(element('game').className, 'game');
+  assert.equal(element('exit-sphere').hidden, true);
+  assert.equal(element('board').className, 'board');
+  assert.equal(element('progress-count').textContent, '1 / 12');
+  assert.equal(data.get('vocoby-view'), 'columns');
   assert.deepEqual(left.slice(1).map(button => button.textContent), previousLeft.slice(1));
   assert.ok(right.some((button, slot) => previousRight.includes(button.textContent)
     && button.textContent !== previousRight[slot]), 'existing translations move after a match');
