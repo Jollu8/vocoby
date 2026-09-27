@@ -112,6 +112,16 @@ button, select, summary { touch-action: manipulation; }
   .word.correct { animation: none; }
 }
 
+.game-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; }
+.sound-toggle { display: inline-grid; place-items: center; flex-shrink: 0; border: 1px solid var(--line); background: var(--panel); color: var(--green); border-radius: 50%; width: 40px; height: 40px; padding: 0; }
+.sound-toggle[aria-pressed="true"] .sound-off, .sound-toggle[aria-pressed="false"] .sound-on { display: none; }
+.sound-toggle:hover { background: var(--panel-soft); }
+.game { position: relative; }
+.celebration { position: absolute; top: 92px; left: 50%; translate: -50% 0; z-index: 6; width: max-content; max-width: calc(100% - 24px); padding: 12px 18px; border: 1px solid #bad8cd; border-radius: 16px; background: #edf9f3; color: #2d6a52; box-shadow: 0 6px 20px #2d6a5218; font-size: 14px; text-align: center; pointer-events: none; animation: celebrate-in 300ms ease-out; }
+.word.wrong { animation: pair-wrong 300ms ease-out; }
+@keyframes pair-wrong { 0%,100% { translate: 0; } 25% { translate: -3px; } 50% { translate: 3px; } 75% { translate: -2px; } }
+@keyframes celebrate-in { from { opacity: 0; margin-top: 8px; } to { opacity: 1; margin-top: 0; } }
+@media(prefers-reduced-motion:reduce) { .word.wrong, .celebration { animation: none; } }
 body:has(.sphere-fullscreen) { overflow: hidden; }
 .game.sphere-fullscreen { position: fixed; inset: 0; z-index: 100; overflow-y: auto; overscroll-behavior: contain; border: 0; border-radius: 0; padding: 0 max(16px, calc((100vw - 1000px) / 2)) max(20px, env(safe-area-inset-bottom)); background: var(--page); }
 .sphere-fullscreen .game-header { position: sticky; top: 0; z-index: 5; background: var(--page); padding: max(16px, env(safe-area-inset-top)) 0 16px; margin: 0 0 12px; gap: 12px; border-bottom: 1px solid var(--line); }

@@ -55,6 +55,11 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   await import('../app.js');
   await wait(10);
   assert.equal(buttonsCreated, 10);
+  element('sound-toggle').click();
+  assert.equal(data.get('vocoby-sound'), 'off');
+  assert.equal(element('sound-toggle').getAttribute('aria-pressed'), 'false');
+  element('sound-toggle').click();
+  assert.equal(data.get('vocoby-sound'), 'on');
   const left = element('english').children, right = element('russian').children;
   assert.equal(left.filter(button => !button.disabled).length, 5);
   assert.ok(requested.some(path => path.startsWith('data/a1-vocabden/chunks/')));
@@ -115,6 +120,8 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   // Network is still pending, but another existing pair can be answered.
   await match(left[1]);
   assert.equal(element('progress-count').textContent, '3 / 12');
+  assert.match(element('celebration').textContent, /3 пары подряд/);
+  assert.equal(element('celebration').hidden, false);
   releaseNext(); await wait(20);
   assert.equal(left.filter(button => !button.disabled).length, 5);
   assert.equal(buttonsCreated, 10);
@@ -126,6 +133,7 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   element('level').listeners.change();
   await wait(20);
   assert.equal(element('progress-count').textContent, '0 / 6', 'collection has independent progress');
+  assert.equal(element('celebration').hidden, true);
   assert.equal(element('selection-summary').textContent, 'Most 1000 · A–Z');
   await match(left[0]);
   assert.equal(element('progress-count').textContent, '1 / 6');

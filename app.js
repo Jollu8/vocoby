@@ -1,5 +1,6 @@
 import { shuffle } from './engine.js';
 import { ChunkStream, ProgressStore } from './dictionary.js';
+import { Sounds } from './sounds.js';
 const $ = id => document.getElementById(id);
 function levelLabel(level) {
   if (level === 'most-1000') return 'Most 1000';
@@ -14,6 +15,28 @@ function levelLabel(level) {
 let storage;
 try { storage = window.localStorage; } catch { storage = { getItem() { throw Error(); }, setItem() { throw Error(); } }; }
 const progress = new ProgressStore(storage);
+const sounds = new Sounds(storage);
+function updateSoundButton() {
+  $('sound-toggle').setAttribute('aria-pressed', String(sounds.enabled));
+  $('sound-toggle').setAttribute('aria-label', sounds.enabled ? 'Выключить звуки' : 'Включить звуки');
+  $('sound-toggle').setAttribute('title', sounds.enabled ? 'Выключить звуки' : 'Включить звуки');
+}
+updateSoundButton();
+$('sound-toggle').addEventListener('click', () => { sounds.toggle(); updateSoundButton(); });
+let pairStreak = 0, celebrationTimer;
+function clearCelebration() {
+  clearTimeout(celebrationTimer);
+  $('celebration').hidden = true;
+  $('celebration').textContent = '';
+}
+function celebrate() {
+  if (![3, 5].includes(pairStreak) && (pairStreak < 10 || pairStreak % 5 !== 0)) return;
+  clearCelebration();
+  $('celebration').textContent = pairStreak === 3 ? '✦ 3 пары подряд! Отличный старт!' :
+    pairStreak === 5 ? '✦ 5 пар подряд! Так держать!' : `✦ ${pairStreak} пар подряд! Блестяще!`;
+  $('celebration').hidden = false;
+  celebrationTimer = setTimeout(clearCelebration, 2800);
+}
 let boardView = 'columns';
 try { if (storage.getItem('vocoby-view') === 'sphere') boardView = 'sphere'; } catch {}
 let manifest, most1000, chunks = [], stream, active = Array(5).fill(null), right = Array(5).fill(null);
@@ -270,6 +293,8 @@ function replenish() {
   return pumping;
 }
 function start() {
+  pairStreak = 0;
+  clearCelebration();
   stream?.close();
   generation++;
   pumping = null; selected = null; queuedMatch = null; busy = false; feedback = [];
@@ -286,6 +311,7 @@ function start() {
 async function choose(side, id) {
   if (queuedMatch || feedback.some(item => item.side === side && item.id === id)) return;
   if (!selected || selected.side === side) {
+    sounds.play('select');
     selected = selected?.id === id && selected.side === side ? null : { side, id };
     render();
     if (selected) focusFirstAvailable(side === 'english' ? 'russian' : 'english');
@@ -298,6 +324,9 @@ async function choose(side, id) {
   }
   const first = selected; selected = null; busy = true;
   const correct = first.id === id, token = generation;
+  sounds.play(correct ? 'match' : 'wrong');
+  if (correct) { pairStreak++; celebrate(); }
+  else { pairStreak = 0; clearCelebration(); }
   feedback = [{ ...first, correct }, { side, id, correct }];
   render();
   $('status').textContent = correct ? 'Верно! Ещё одно слово в копилке.' : 'Пока не совпало. Попробуйте другую пару.';
