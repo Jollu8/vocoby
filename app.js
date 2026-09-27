@@ -3,7 +3,7 @@ import { ChunkStream, ProgressStore } from './dictionary.js';
 import { Sounds } from './sounds.js';
 const $ = id => document.getElementById(id);
 function levelLabel(level) {
-  if (level === 'most-1000') return 'Most 1000';
+  if (level === 'most-1000') return '1000 сложных слов';
   if (level === 'ungraded') return 'Без уровня';
   if (['A1', 'A2', 'B1', 'B2'].includes(level)) {
     const count = manifest.chunks.filter(chunk => chunk.level === level)

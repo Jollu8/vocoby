@@ -128,13 +128,13 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   await match(left.find(button => !button.disabled));
   assert.equal(element('progress-count').textContent, '4 / 12');
   assert.equal(buttonsCreated, 10);
-  assert.ok(element('level').children.some(option => option.value === 'most-1000' && option.text === 'Most 1000'));
+  assert.ok(element('level').children.some(option => option.value === 'most-1000' && option.text === '1000 сложных слов'));
   element('level').value = 'most-1000';
   element('level').listeners.change();
   await wait(20);
   assert.equal(element('progress-count').textContent, '0 / 6', 'collection has independent progress');
   assert.equal(element('celebration').hidden, true);
-  assert.equal(element('selection-summary').textContent, 'Most 1000 · A–Z');
+  assert.equal(element('selection-summary').textContent, '1000 сложных слов · A–Z');
   await match(left[0]);
   assert.equal(element('progress-count').textContent, '1 / 6');
   element('letter').value = 'z';
