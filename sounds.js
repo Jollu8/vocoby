@@ -1,4 +1,4 @@
-// Quiet wooden taps and rounded chimes, created only after an interaction.
+// Quiet wooden taps and soft confirmation tones, created only after an interaction.
 export class Sounds {
   constructor(storage) {
     this.storage = storage;
@@ -22,15 +22,13 @@ export class Sounds {
       }
       if (this.context.state === 'suspended') void this.context.resume().catch(() => {});
       // A fast-decaying body and a faint inharmonic overtone make a wooden tap.
-      // Matching resolves upwards into a warm major chord, without a sharp bell attack.
+      // A brief, low consonant tone confirms matches without a repeating melody.
       const notes = kind === 'select' ? [
         { frequency: 310, end: 220, volume: 0.065, attack: 0.003, duration: 0.075 },
         { frequency: 790, end: 640, volume: 0.012, attack: 0.002, duration: 0.028 },
       ] : kind === 'match' ? [
-        { frequency: 523.25, volume: 0.035, duration: 0.26 },
-        { frequency: 659.25, volume: 0.032, delay: 0.065, duration: 0.3 },
-        { frequency: 783.99, volume: 0.025, delay: 0.13, duration: 0.34 },
-        { frequency: 261.63, volume: 0.018, delay: 0.065, duration: 0.32 },
+        { frequency: 330, volume: 0.022, attack: 0.018, duration: 0.16 },
+        { frequency: 495, volume: 0.007, attack: 0.02, duration: 0.12 },
       ] : [
         { frequency: 196, volume: 0.025, duration: 0.18 },
         { frequency: 174.61, volume: 0.025, delay: 0.09, duration: 0.18 },
