@@ -23,7 +23,8 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
     getAttribute(name) { return this.attributes[name]; }
     append(child) { this.children.push(child); }
     add(option) { this.children.push(option); }
-    click() { if (!this.disabled) this.listeners.click?.(); }
+    focus() { document.activeElement = this; }
+    click(event) { if (!this.disabled) this.listeners.click?.(event); }
   }
   const elements = new Map();
   const element = id => { if (!elements.has(id)) elements.set(id, new Element()); return elements.get(id); };
@@ -233,7 +234,8 @@ test('the newest English selection stays active during the short match feedback'
     getAttribute(name) { return this.attributes[name]; }
     append(child) { this.children.push(child); }
     add(option) { this.children.push(option); }
-    click() { if (!this.disabled) this.listeners.click?.(); }
+    focus() { document.activeElement = this; }
+    click(event) { if (!this.disabled) this.listeners.click?.(event); }
   }
   const elements = new Map();
   const element = id => { if (!elements.has(id)) elements.set(id, new Element()); return elements.get(id); };
@@ -262,7 +264,11 @@ test('the newest English selection stays active during the short match feedback'
   const right = element('russian').children;
   assert.ok(left.length >= 2, 'board has enough English buttons');
   assert.ok(right.length >= 2, 'board has enough Russian buttons');
-  left[0].click();
+  left[0].click({ detail: 1 });
+  assert.equal(document.activeElement, undefined, 'a tap does not focus another card');
+  left[0].click({ detail: 1 });
+  left[0].click({ detail: 0 });
+  assert.ok(right.includes(document.activeElement), 'keyboard selection focuses the translation column');
   right.find(button => button.textContent === 'ru-0').click();
   left[1].click();
   assert.equal(left[1].getAttribute('aria-pressed'), 'true');
@@ -274,4 +280,31 @@ test('the newest English selection stays active during the short match feedback'
   right.find(button => button.textContent === 'ru-2').click();
   await new Promise(resolve => setTimeout(resolve, 900));
   assert.equal(element('progress-count').textContent, '3 / 3');
+
+  const originalRandom = Math.random;
+  Math.random = () => 0.999;
+  window.confirm = () => true;
+  element('restart').click();
+  await new Promise(resolve => setTimeout(resolve, 20));
+  left[0].click();
+  right.find(button => button.textContent === 'ru-0').click();
+  left[1].click({ detail: 1 });
+  const held = right.find(button => button.textContent === 'ru-1');
+  held.listeners.pointerdown();
+  // Reproduce a reshuffle between pointerdown and click deterministically.
+  Math.random = () => 0;
+  try {
+    await new Promise(resolve => setTimeout(resolve, 450));
+  } finally {
+    Math.random = originalRandom;
+  }
+  assert.equal(held.textContent, 'ru-2');
+  assert.equal(held.disabled, false);
+  held.click({ detail: 1 });
+  assert.equal(left[1].getAttribute('aria-pressed'), 'true', 'a moved card cannot consume the selection');
+  const translation = right.find(button => button.textContent === 'ru-1');
+  translation.listeners.pointerdown();
+  translation.click({ detail: 1 });
+  await new Promise(resolve => setTimeout(resolve, 450));
+  assert.equal(element('progress-count').textContent, '2 / 3');
 });

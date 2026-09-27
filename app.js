@@ -120,9 +120,20 @@ for (const side of ['english', 'russian']) {
     const button = document.createElement('button');
     button.type = 'button';
     button.setAttribute('lang', side === 'english' ? 'en' : 'ru');
-    button.addEventListener('click', () => {
+    let pressed = null;
+    button.addEventListener('pointerdown', () => {
       const word = (side === 'english' ? active : right)[slot];
-      if (word) void choose(side, word.id);
+      pressed = { id: word?.id, generation };
+    });
+    button.addEventListener('pointercancel', () => { pressed = null; });
+    button.addEventListener('click', event => {
+      const word = (side === 'english' ? active : right)[slot];
+      const start = pressed;
+      pressed = null;
+      const keyboard = event?.detail === 0;
+      // A completed pair can replace or move this card while a finger is down.
+      if (!keyboard && start && (start.generation !== generation || start.id !== word?.id)) return;
+      if (word) void choose(side, word.id, keyboard);
     });
     $(side).append(button);
     return button;
@@ -308,13 +319,13 @@ function start() {
   $('retry').hidden = true; $('status').textContent = 'Загружаем слова…'; render();
   void replenish();
 }
-async function choose(side, id) {
+async function choose(side, id, keyboard = false) {
   if (queuedMatch || feedback.some(item => item.side === side && item.id === id)) return;
   if (!selected || selected.side === side) {
     sounds.play('select');
     selected = selected?.id === id && selected.side === side ? null : { side, id };
     render();
-    if (selected) focusFirstAvailable(side === 'english' ? 'russian' : 'english');
+    if (selected && keyboard) focusFirstAvailable(side === 'english' ? 'russian' : 'english');
     return;
   }
   if (busy) {
