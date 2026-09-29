@@ -55,7 +55,7 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
   await import('../app.js');
   await wait(10);
-  assert.equal(buttonsCreated, 10);
+  assert.equal(buttonsCreated, 15);
   element('sound-toggle').click();
   assert.equal(data.get('vocoby-sound'), 'off');
   assert.equal(element('sound-toggle').getAttribute('aria-pressed'), 'false');
@@ -72,44 +72,12 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
     right.find(button => button.textContent === translation).click();
     await wait(450);
   }
-  element('view-sphere').click();
-  assert.equal(element('board').className, 'board sphere');
-  assert.equal(element('game').className, 'game sphere-fullscreen');
-  assert.equal(data.get('vocoby-view'), 'sphere');
-  assert.equal(element('column-labels').hidden, true);
-  const viewport = element('board-viewport');
-  viewport.scrollLeft = 200; viewport.scrollTop = 200;
-  viewport.setPointerCapture = () => {};
-  viewport.hasPointerCapture = () => false;
-  viewport.listeners.pointerdown({ button: 0, pointerId: 1, clientX: 100, clientY: 100 });
-  viewport.listeners.pointermove({ pointerId: 1, clientX: 140, clientY: 130 });
-  assert.equal(viewport.scrollLeft, 160);
-  assert.equal(viewport.scrollTop, 170);
-  viewport.listeners.pointerup({ pointerId: 1 });
-  let blockedDragClick = false;
-  viewport.listeners.click({ detail: 1, preventDefault() {}, stopPropagation() { blockedDragClick = true; } });
-  assert.equal(blockedDragClick, true, 'dragging does not select a word');
-  const initialPositions = [...left, ...right].map(button => button.style['--sphere-x'] + button.style['--sphere-y']);
-  assert.equal(new Set(initialPositions).size, 10);
-  const depths = [...left, ...right].map(button => parseFloat(button.style['--dome-depth']));
-  assert.ok(depths.every(depth => depth >= 0 && depth <= 32));
-  assert.ok(new Set(depths).size > 1, 'dome has different depths');
-  for (const button of [...left, ...right]) {
-    assert.ok(Number.isFinite(parseFloat(button.style['--mobile-dome-rx'])));
-    assert.ok(parseFloat(button.style['--dome-scale']) >= 0.88);
-  }
   const previousLeft = left.map(button => button.textContent);
   const previousRight = right.map(button => button.textContent);
   Math.random.mock.mockImplementation(() => 0.5);
   await match(left[0]);
   assert.equal(element('progress-count').textContent, '1 / 12');
   assert.equal(left[0].textContent, 'en-0-5');
-  assert.notDeepEqual([...left, ...right].map(button => button.style['--sphere-x'] + button.style['--sphere-y']), initialPositions);
-  element('view-columns').click();
-  assert.equal(element('game').className, 'game');
-  assert.equal(element('board').className, 'board');
-  assert.equal(element('progress-count').textContent, '1 / 12');
-  assert.equal(data.get('vocoby-view'), 'columns');
   assert.deepEqual(left.slice(1).map(button => button.textContent), previousLeft.slice(1));
   assert.ok(right.some((button, slot) => previousRight.includes(button.textContent)
     && button.textContent !== previousRight[slot]), 'existing translations move after a match');
@@ -125,10 +93,10 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   assert.equal(element('celebration').hidden, false);
   releaseNext(); await wait(20);
   assert.equal(left.filter(button => !button.disabled).length, 5);
-  assert.equal(buttonsCreated, 10);
+  assert.equal(buttonsCreated, 15);
   await match(left.find(button => !button.disabled));
   assert.equal(element('progress-count').textContent, '4 / 12');
-  assert.equal(buttonsCreated, 10);
+  assert.equal(buttonsCreated, 15);
   assert.ok(element('level').children.some(option => option.value === 'most-1000' && option.text === '1000 сложных слов'));
   element('level').value = 'most-1000';
   element('level').listeners.change();
@@ -154,7 +122,7 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   window.confirm = () => true;
   element('restart').click();
   await wait(20);
-  assert.equal(element('progress-count').textContent, '0 / 6');
+  assert.equal(element('progress-count').textContent, '1 / 6', 'review preserves learned words');
   element('level').value = 'all';
   element('level').listeners.change();
   await wait(20);
@@ -325,5 +293,155 @@ test('the newest English selection stays active during the short match feedback'
   translation.listeners.pointerdown();
   translation.click({ detail: 1 });
   await new Promise(resolve => setTimeout(resolve, 450));
-  assert.equal(element('progress-count').textContent, '2 / 3');
+  assert.equal(element('progress-count').textContent, '3 / 3', 'review does not erase prior progress');
+  assert.equal(element('session-count').textContent, 2);
+});
+
+
+test('choice and typing share progress, persist settings and cancel stale pair feedback', async () => {
+  const data = new Map();
+  class Element {
+    constructor() {
+      this.style = { setProperty(name, value) { this[name] = value; } };
+      this.listeners = {};
+      this.children = [];
+      this.value = 'all';
+      this.textContent = '';
+      this.attributes = {};
+      this.classList = {
+        classes: new Set(),
+        add(...names) { names.forEach(name => this.classes.add(name)); },
+        remove(...names) { names.forEach(name => this.classes.delete(name)); },
+        contains(name) { return this.classes.has(name); },
+      };
+    }
+    addEventListener(name, callback) { this.listeners[name] = callback; }
+    setAttribute(name, value) { this.attributes[name] = String(value); }
+    getAttribute(name) { return this.attributes[name]; }
+    append(child) { this.children.push(child); }
+    add(option) { this.children.push(option); }
+    focus() { document.activeElement = this; }
+    click(event) { if (!this.disabled) this.listeners.click?.(event); }
+  }
+  const elements = new Map();
+  const element = id => { if (!elements.has(id)) elements.set(id, new Element()); return elements.get(id); };
+  globalThis.window = { localStorage: { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) }, addEventListener() {} };
+  globalThis.document = {
+    getElementById: element, querySelector: element, addEventListener() {},
+    createElement() { return new Element(); },
+  };
+  globalThis.matchMedia = () => ({ matches: true, addEventListener() {} });
+  globalThis.Option = class { constructor(text, value) { this.text = text; this.value = value; } };
+  const chunks = [{ path: 'chunks/quick.json', revision: 'r1', count: 3, level: 'A1', letter: 'a' }];
+  const words = Array.from({ length: 3 }, (_, j) => ({ id: `w-${j}`, en: `en-${j}`, ru: `ru-${j}`, chunk: chunks[0] }));
+  globalThis.fetch = async path => ({ ok: true, json: async () => {
+    if (path === 'data/manifest.json') return { total: 3, levels: ['A1', 'B1'], chunks: [{ ...chunks[0], level: 'A1', path: 'chunks/legacy-a1.json' }, { ...chunks[0], level: 'B1', path: 'chunks/legacy-b1.json' }] };
+    if (path === 'data/most-1000/manifest.json') return { total: 0, chunks: [] };
+    if (path === 'data/a1-vocabden/manifest.json') return { total: 3, levels: ['A1'], chunks };
+    if (path === 'data/a2-user/manifest.json') return { total: 0, levels: ['A2'], chunks: [] };
+    if (path === 'data/b1-user/manifest.json') return { total: 0, levels: ['B1'], chunks: [] };
+    if (path === 'data/b2-user/manifest.json') return { total: 0, levels: ['B2'], chunks: [] };
+    if (path.includes('/quick.')) return words;
+    return words;
+  } });
+
+  data.set('vocoby-view', 'sphere'); // Removed view falls back to pairs.
+  await import('../app.js?exercise-modes');
+  const wait = () => new Promise(resolve => setTimeout(resolve, 30));
+  await wait();
+  assert.equal(element('board-viewport').hidden, false);
+  element('view-choice').click();
+  await wait();
+  assert.equal(element('board-viewport').hidden, true);
+  assert.equal(element('choices').hidden, false);
+  assert.equal(element('choices').children.filter(button => !button.hidden).length, 3);
+  const prompt = element('prompt-word').textContent;
+  const choices = element('choices').children;
+  choices.find(button => button.textContent !== prompt.replace('en-', 'ru-')).click();
+  assert.equal(element('progress-count').textContent, '0 / 3');
+  assert.ok(choices.filter(button => !button.hidden).every(button => !button.disabled), 'wrong answer allows another attempt');
+  assert.equal(element('next-question').hidden, true);
+  await new Promise(resolve => setTimeout(resolve, 1450));
+  assert.equal(element('prompt-word').textContent, prompt, 'wrong answer never advances automatically');
+  assert.equal(element('progress-count').textContent, '0 / 3');
+  const wrongChoice = choices.find(button => button.textContent !== prompt.replace('en-', 'ru-'));
+  wrongChoice.click();
+  assert.equal(wrongChoice.className, 'word choice-wrong');
+  assert.equal(element('prompt-word').textContent, prompt, 'repeated errors keep the same question');
+  const nextPrompt = element('prompt-word').textContent;
+  choices.find(button => button.textContent === nextPrompt.replace('en-', 'ru-')).click();
+  assert.equal(element('progress-count').textContent, '0 / 3', 'answer after error waits for a clean retry');
+  assert.ok(choices.every(button => button.disabled));
+  await new Promise(resolve => setTimeout(resolve, 550));
+  assert.notEqual(element('prompt-word').textContent, nextPrompt);
+  element('view-typing').click();
+  await wait();
+  element('direction').value = 'ru-en';
+  element('direction').listeners.change();
+  await wait();
+  assert.equal(element('prompt-word').getAttribute('lang'), 'ru');
+  const answer = element('prompt-word').textContent.replace('ru-', 'en-');
+  const submit = value => {
+    element('answer-input').value = value;
+    element('answer-form').listeners.submit({ preventDefault() {} });
+  };
+  submit(answer.replace('en', 'em'));
+  assert.equal(element('progress-count').textContent, '0 / 3');
+  element('tolerance').value = 'typo';
+  element('tolerance').listeners.change();
+  await wait();
+  submit(answer.replace('en', 'em'));
+  assert.equal(element('progress-count').textContent, '0 / 3', 'typo schedules a clean retry');
+  assert.match(element('answer-feedback').textContent, /опечаткой/);
+  submit(answer);
+  assert.equal(element('session-count').textContent, 0, 'repeat submit cannot count twice');
+  assert.equal(element('next-question').hidden, true);
+  await new Promise(resolve => setTimeout(resolve, 1450));
+  assert.notEqual(element('prompt-word').textContent.replace('ru-', 'en-'), answer);
+  assert.equal(element('answer-input').value, '');
+  assert.equal(document.activeElement, element('answer-input'));
+  const revealed = element('prompt-word').textContent;
+  element('show-answer').click();
+  assert.equal(element('progress-count').textContent, '0 / 3');
+  element('next-question').click();
+  await wait();
+  assert.notEqual(element('prompt-word').textContent, revealed);
+  // Finish the remaining word, then both retries from this short collection.
+  for (let i = 1; i <= 3; i++) {
+    submit(element('prompt-word').textContent.replace('ru-', 'en-'));
+    assert.equal(element('progress-count').textContent, `${i} / 3`);
+    await new Promise(resolve => setTimeout(resolve, 550));
+  }
+  assert.equal(element('lesson-summary').hidden, false);
+  assert.match(element('lesson-result').textContent, /Слов: 3. 1.*2/);
+  assert.equal(document.activeElement, element('continue-lesson'));
+  assert.equal(element('check-answer').disabled, true);
+  assert.equal(data.get('vocoby-view'), 'typing');
+  assert.equal(data.get('vocoby-direction'), 'ru-en');
+  assert.equal(data.get('vocoby-tolerance'), 'typo');
+  element('continue-lesson').click();
+  await wait();
+  assert.equal(element('progress-count').textContent, '3 / 3');
+  assert.equal(element('lesson-summary').hidden, true);
+  assert.equal(element('check-answer').disabled, false, 'learned words can be reviewed');
+  submit(element('prompt-word').textContent.replace('ru-', 'en-'));
+  assert.equal(element('progress-count').textContent, '3 / 3', 'review never inflates progress');
+  element('view-columns').click();
+  await new Promise(resolve => setTimeout(resolve, 550));
+  element('restart').click();
+  await wait();
+  const left = element('english').children.find(button => !button.disabled);
+  left.click();
+  element('russian').children.find(button => button.textContent === left.textContent.replace('en-', 'ru-')).click();
+  element('view-choice').click();
+  await new Promise(resolve => setTimeout(resolve, 460));
+  assert.equal(element('session-count').textContent, 0, 'stale pair feedback cannot affect the next lesson');
+  assert.equal(element('progress-count').textContent, '3 / 3');
+  elements.clear();
+  await import('../app.js?exercise-restore');
+  await wait();
+  assert.equal(element('view-choice').getAttribute('aria-pressed'), 'true');
+  assert.equal(element('direction').value, 'ru-en');
+  assert.equal(element('tolerance').value, 'typo');
+  assert.equal(element('progress-count').textContent, '3 / 3', 'review preserves progress after reload');
 });

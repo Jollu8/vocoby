@@ -1,6 +1,7 @@
-import { shuffle } from './engine.js';
+import { shuffle, checkAnswer, makeChoices } from './engine.js';
 import { ChunkStream, ProgressStore } from './dictionary.js';
 import { Sounds } from './sounds.js';
+import { StudySession, currentStreak } from './session.js';
 const $ = id => document.getElementById(id);
 function levelLabel(level) {
   if (level === 'most-1000') return '1000 сложных слов';
@@ -38,10 +39,14 @@ function celebrate() {
   celebrationTimer = setTimeout(clearCelebration, 2800);
 }
 let boardView = 'columns';
-try { if (storage.getItem('vocoby-view') === 'sphere') boardView = 'sphere'; } catch {}
+try { const saved = storage.getItem('vocoby-view'); if (['choice', 'typing'].includes(saved)) boardView = saved; } catch {}
+let advanceTimer, autoAdvancing = false;
+let direction = 'en-ru', tolerance = 'strict', question = null, options = [], answerPool = [], answered = false;
+try { direction = storage.getItem('vocoby-direction') === 'ru-en' ? 'ru-en' : 'en-ru'; tolerance = storage.getItem('vocoby-tolerance') === 'typo' ? 'typo' : 'strict'; } catch {}
 let manifest, most1000, chunks = [], stream, active = Array(5).fill(null), right = Array(5).fill(null);
 let queuedMatch = null;
-let selected = null, busy = false, generation = 0, session = 0, completed = 0, total = 0;
+let reviewing = false, lessonEnded = false;
+let selected = null, busy = false, generation = 0, completed = 0, total = 0;
 let pumping = null, saveScheduled = false, feedback = [];
 const statsKey = 'vocoby-study-stats-v1';
 const selectionKey = 'vocoby-selection-v1';
@@ -95,7 +100,7 @@ function yesterday(day) {
 function updateStats() {
   const learned = manifest ? [...manifest.chunks, ...most1000.chunks].reduce((sum, chunk) => sum + progress.count(chunk), 0) : 0;
   $('learned-total').textContent = learned;
-  $('streak-count').textContent = readStats().streak;
+  $('streak-count').textContent = currentStreak(readStats(), localDay(), yesterday(localDay()));
 }
 function recordStudyDay() {
   const today = localDay();
@@ -123,10 +128,11 @@ function updateProgress() {
   $('progress').max = total || 1;
   $('progress').value = completed;
   $('collection-count').textContent = `Слов в подборке: ${total}`;
-  $('session-count').textContent = session;
+  $('session-count').textContent = stream?.finished.size || 0;
+  $('lesson-progress').textContent = `${reviewing ? 'Повторение' : 'Тренировка'} · закреплено ${stream?.finished.size || 0} · до 15 слов`;
   const level = $('level').value === 'all' ? 'Все уровни' : levelLabel($('level').value);
   const letter = $('letter').value === 'all' ? 'A–Z' : $('letter').value.toUpperCase();
-  $('selection-summary').textContent = `${level} · ${letter}`;
+  $('selection-summary').textContent = `${level} · ${letter}${boardView === 'columns' ? '' : direction === 'en-ru' ? ' · EN → RU' : ' · RU → EN'}`;
   updateStats();
 }
 // Create ten buttons once; selecting a card never rebuilds the board.
@@ -155,111 +161,138 @@ for (const side of ['english', 'russian']) {
     return button;
   });
 }
-// Separate, non-overlapping positions for desktop and narrow screens.
-const spherePositions = [[36, 20], [64, 20], [22, 40], [50, 40], [78, 40],
-  [22, 60], [50, 60], [78, 60], [36, 80], [64, 80]];
-const mobileSpherePositions = [[50, 10], [30, 26], [70, 26], [30, 42], [70, 42],
-  [30, 58], [70, 58], [30, 74], [70, 74], [50, 90]];
-function setDomePosition(button, x, y, prefix) {
-  const nx = (x - 50) / 50, ny = (y - 50) / 50;
-  const depth = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
-  button.style.setProperty(`${prefix}-depth`, `${(depth * 32).toFixed(2)}px`);
-  button.style.setProperty(`${prefix}-scale`, (0.88 + depth * 0.1).toFixed(3));
-  button.style.setProperty(`${prefix}-rx`, `${(-ny * 14).toFixed(2)}deg`);
-  button.style.setProperty(`${prefix}-ry`, `${(nx * 16).toFixed(2)}deg`);
-}
-function scatterWords() {
-  const positions = shuffle(Array.from({ length: 10 }, (_, index) => index));
-  [...cards.english, ...cards.russian].forEach((button, index) => {
-    const slot = positions[index];
-    const [x, y] = spherePositions[slot];
-    button.style.setProperty('--sphere-x', `${x}%`);
-    button.style.setProperty('--sphere-y', `${y}%`);
-    const [mobileX, mobileY] = mobileSpherePositions[slot];
-    button.style.setProperty('--sphere-mobile-x', `${mobileX}%`);
-    button.style.setProperty('--sphere-mobile-y', `${mobileY}%`);
-    setDomePosition(button, x, y, '--dome');
-    setDomePosition(button, mobileX, mobileY, '--mobile-dome');
-  });
-}
 function setBoardView(view) {
   boardView = view;
-  resetDomeTilt();
-  $('game').className = `game${view === 'sphere' ? ' sphere-fullscreen' : ''}`;
-  $('board').className = `board${view === 'sphere' ? ' sphere' : ''}`;
-  $('column-labels').hidden = view === 'sphere';
-  const viewport = $('board-viewport');
-  viewport.scrollLeft = view === 'sphere' ? Math.max(0, ((viewport.scrollWidth || 0) - (viewport.clientWidth || 0)) / 2) : 0;
-  viewport.scrollTop = view === 'sphere' ? Math.max(0, ((viewport.scrollHeight || 0) - (viewport.clientHeight || 0)) / 2) : 0;
-  for (const name of ['columns', 'sphere']) {
-    $(`view-${name}`).setAttribute('aria-pressed', String(name === view));
-  }
+  $('game').setAttribute('data-view', view);
+  $('game-instructions').textContent = { columns: 'Выберите слово и найдите его перевод.', choice: 'Выберите правильный перевод из предложенных.', typing: 'Введите перевод и нажмите Enter или «Проверить».' }[view];
+  $('column-labels').hidden = view !== 'columns';
+  $('board-viewport').hidden = view !== 'columns';
+  $('exercise').hidden = view === 'columns';
+  $('exercise-settings').hidden = view === 'columns';
+  $('tolerance-field').hidden = view !== 'typing';
+  $('choices').hidden = view !== 'choice';
+  $('answer-form').hidden = view !== 'typing';
+  $('game-title').textContent = { columns: 'Найдите пару', choice: 'Выберите перевод', typing: 'Напишите перевод' }[view];
+  for (const name of ['columns', 'choice', 'typing']) $(`view-${name}`).setAttribute('aria-pressed', String(name === view));
   try { storage.setItem('vocoby-view', view); } catch {}
 }
-const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-function resetDomeTilt() {
-  $('board').style.setProperty('--tilt-x', '0deg');
-  $('board').style.setProperty('--tilt-y', '0deg');
+for (const view of ['columns', 'choice', 'typing']) {
+  $(`view-${view}`).addEventListener('click', () => {
+    if (boardView === view) return;
+    setBoardView(view);
+    if (manifest) start(reviewing);
+  });
 }
-function tiltDome(event) {
-  if (boardView !== 'sphere' || reducedMotion.matches || selected || busy) return;
-  const bounds = $('board').getBoundingClientRect();
-  if (!bounds.width || !bounds.height) return;
-  const x = Math.max(-1, Math.min(1, (event.clientX - bounds.left) / bounds.width * 2 - 1));
-  const y = Math.max(-1, Math.min(1, (event.clientY - bounds.top) / bounds.height * 2 - 1));
-  $('board').style.setProperty('--tilt-x', `${(-y * 3).toFixed(2)}deg`);
-  $('board').style.setProperty('--tilt-y', `${(x * 3).toFixed(2)}deg`);
-}
-$('board').addEventListener('pointermove', tiltDome);
-for (const event of ['pointerleave', 'pointerup', 'pointercancel']) {
-  $('board').addEventListener(event, resetDomeTilt);
-}
-reducedMotion.addEventListener('change', resetDomeTilt);
-const viewport = $('board-viewport');
-let drag = null, dragged = false;
-viewport.addEventListener('pointerdown', event => {
-  if (boardView !== 'sphere' || event.button !== 0 || event.isPrimary === false) return;
-  dragged = false;
-  drag = { id: event.pointerId, x: event.clientX, y: event.clientY,
-    left: viewport.scrollLeft, top: viewport.scrollTop };
+$('direction').value = direction;
+$('tolerance').value = tolerance;
+for (const name of ['direction', 'tolerance']) $(name).addEventListener('change', () => {
+  direction = $('direction').value;
+  tolerance = $('tolerance').value;
+  try { storage.setItem(`vocoby-${name}`, $(name).value); } catch {}
+  if (manifest) start(reviewing);
 });
-viewport.addEventListener('pointermove', event => {
-  if (!drag || event.pointerId !== drag.id) return;
-  const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
-  if (!dragged && Math.hypot(dx, dy) < 6) return;
-  if (!dragged) viewport.setPointerCapture(event.pointerId);
-  dragged = true;
-  viewport.style.cursor = 'grabbing';
-  viewport.scrollLeft = drag.left - dx;
-  viewport.scrollTop = drag.top - dy;
+const choiceButtons = Array.from({ length: 5 }, () => {
+  const button = document.createElement('button');
+  button.type = 'button'; button.className = 'word';
+  let pressed = null;
+  button.addEventListener('pointerdown', () => { pressed = { question, generation }; });
+  button.addEventListener('pointercancel', () => { pressed = null; });
+  button.addEventListener('click', event => {
+    const start = pressed; pressed = null;
+    if (event?.detail !== 0 && start && (start.question !== question || start.generation !== generation)) return;
+    submitAnswer(button.textContent);
+  });
+  $('choices').append(button);
+  return button;
 });
-function stopDragging(event) {
-  if (!drag || event.pointerId !== drag.id) return;
-  drag = null;
-  viewport.style.cursor = '';
-  if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+$('answer-form').addEventListener('submit', event => {
+  event.preventDefault();
+  submitAnswer($('answer-input').value);
+});
+$('show-answer').addEventListener('click', () => {
+  if (!question || answered) return;
+  stream.mistake(question);
+  stream.answer(question);
+  answered = true;
+  $('answer-feedback').textContent = `Перевод: ${question[direction === 'en-ru' ? 'ru' : 'en']}. Слово вернётся через несколько вопросов или в конце тренировки.`;
+  render(); $('next-question').focus();
+});
+$('next-question').addEventListener('click', nextQuestion);
+function nextQuestion() {
+  if (!question || !answered) return;
+  const slot = active.findIndex(word => word?.id === question.id);
+  active[slot] = null;
+  active[slot] = stream.take(active);
+  question = null; answered = false; autoAdvancing = false;
+  syncRight(); render(); readyMessage();
+  void replenish();
+  if (lessonEnded) return;
+  if (boardView === 'typing') $('answer-input').focus();
+  else choiceButtons.find(button => !button.disabled)?.focus();
 }
-for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) {
-  viewport.addEventListener(name, stopDragging);
-}
-viewport.addEventListener('click', event => {
-  if (dragged && event.detail !== 0) {
-    event.preventDefault();
-    event.stopPropagation();
-    dragged = false;
+function renderExercise() {
+  if (boardView === 'columns') return;
+  const word = active.find(Boolean);
+  if (word && !question) {
+    question = word;
+    options = makeChoices(word, [...active.filter(Boolean), ...answerPool], direction);
+    $('answer-input').value = '';
+    $('answer-input').setAttribute('aria-invalid', 'false');
+    $('answer-feedback').textContent = '';
   }
-}, true);
-scatterWords();
-setBoardView(boardView);
-$('view-columns').addEventListener('click', () => setBoardView('columns'));
-$('view-sphere').addEventListener('click', () => setBoardView('sphere'));
-function exitSphere() {
-  setBoardView('columns');
-  $('view-sphere').focus?.();
+  const from = direction === 'en-ru' ? 'en' : 'ru';
+  const to = from === 'en' ? 'ru' : 'en';
+  $('prompt-word').textContent = question?.[from] || 'Нет слов';
+  $('prompt-word').setAttribute('lang', from);
+  $('answer-input').setAttribute('lang', to);
+  $('show-answer').hidden = boardView !== 'typing' || !question || answered;
+  $('answer-input').disabled = !question || answered;
+  $('check-answer').disabled = !question || answered;
+  $('next-question').hidden = boardView === 'choice' || !answered || autoAdvancing;
+  choiceButtons.forEach((button, i) => {
+    if (!answered) button.className = 'word';
+    button.textContent = options[i] || '';
+    button.hidden = !question || !options[i];
+    button.disabled = !question || answered;
+    button.setAttribute('lang', to);
+  });
 }
-document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && boardView === 'sphere') exitSphere();
-});
+function submitAnswer(value) {
+  if (boardView === 'columns' || !question || answered || !value.trim()) return;
+  const expected = question[direction === 'en-ru' ? 'ru' : 'en'];
+  const result = checkAnswer(value, expected, boardView === 'typing' && tolerance === 'typo');
+  sounds.play(result.correct ? 'match' : 'wrong');
+  if (!result.correct) {
+    stream.mistake(question);
+    $('answer-feedback').textContent = 'Пока неверно. Попробуйте ещё раз.';
+    if (boardView === 'typing') $('answer-input').setAttribute('aria-invalid', 'true');
+    else choiceButtons.forEach(button => {
+      button.className = button.textContent === value ? 'word choice-wrong' : 'word';
+    });
+    return;
+  }
+  answered = true;
+  autoAdvancing = true;
+  $('answer-input').setAttribute('aria-invalid', 'false');
+  if (result.typo) stream.mistake(question);
+  const clean = stream.answer(question);
+  if (clean) completed += progress.add(question.chunk, question.id);
+  saveLater(); recordStudyDay();
+  $('answer-feedback').textContent = result.typo ? `Зачтено с опечаткой. Правильно: ${expected}` : `Верно! ${expected}`;
+  if (!clean) $('answer-feedback').textContent += ' · Повторим это слово в тренировке.';
+  render();
+  if (boardView === 'choice') {
+    choiceButtons.forEach(button => {
+      if (button.textContent === expected) button.className = 'word choice-correct';
+      else button.className = 'word';
+    });
+  }
+  const token = generation, current = question, mode = boardView;
+  advanceTimer = setTimeout(() => {
+    if (generation === token && question === current && boardView === mode) nextQuestion();
+  }, result.typo ? 1400 : 500);
+}
+setBoardView(boardView);
 function render() {
   for (const [side, values] of [['english', active], ['russian', right]]) {
     values.forEach((word, slot) => {
@@ -275,21 +308,41 @@ function render() {
       if (state) button.classList.add(state.correct ? 'correct' : 'wrong');
     });
   }
+  renderExercise();
   updateProgress();
 }
 function readyMessage() {
+  $('status').setAttribute('data-state', 'ready');
+  if (stream?.done && !active.some(Boolean) && stream.words.size) {
+    finishLesson();
+    return;
+  }
   $('status').textContent = active.some(Boolean)
-    ? 'Выберите слово и подходящий перевод.'
-    : chunks.length ? 'Подборка пройдена! Повторите её или выберите другую.' : 'В этой подборке пока нет слов.';
+    ? boardView === 'columns' ? 'Выберите слово и подходящий перевод.' : boardView === 'choice' ? 'Выберите один правильный перевод.' : 'Введите один из переводов из словаря. Регистр, ё/е и пробелы не учитываются.'
+    : chunks.length ? completed === total ? 'Подборка пройдена! Повторите её или выберите другую.' : 'Доступные слова закончились. Выберите режим заново, чтобы повторить пропущенные слова.' : 'В этой подборке пока нет слов.';
 }
+function finishLesson() {
+  if (lessonEnded) return;
+  lessonEnded = true;
+  clearCelebration();
+  $('lesson-summary').hidden = false;
+  $('exercise').hidden = true;
+  $('board-viewport').hidden = true;
+  $('column-labels').hidden = true;
+  $('lesson-result').textContent = `Слов: ${stream.words.size}. ${stream.firstTry} — верно с первой попытки, ${stream.mistakes.size} — повторили после ошибки или подсказки.`;
+  $('status').textContent = 'Тренировка завершена. Можно отдохнуть или продолжить.';
+  $('continue-lesson').textContent = !reviewing && completed === total ? 'Повторить подборку ↻' : 'Следующая тренировка →';
+  $('continue-lesson').focus();
+}
+$('continue-lesson').addEventListener('click', () => start(reviewing || completed === total));
 function showError() {
-  $('status').textContent = 'Не удалось загрузить новые слова. Доступные пары можно продолжать собирать.';
+  $('status').setAttribute('data-state', 'error');
+  $('status').textContent = 'Не удалось загрузить новые слова. Можно продолжить с уже загруженными словами.';
   $('retry').hidden = false;
 }
 function syncRight() {
   // Shuffle the whole translation column so a replacement's position isn't a hint.
   right = shuffle(active);
-  if (boardView === 'sphere') scatterWords();
 }
 function replenish() {
   if (pumping) return pumping;
@@ -319,8 +372,17 @@ function replenish() {
   pumping = Promise.resolve().then(work);
   return pumping;
 }
-function start() {
+function start(review = false) {
+  reviewing = review;
+  lessonEnded = false;
+  $('lesson-summary').hidden = true;
+  setBoardView(boardView);
+  clearTimeout(advanceTimer);
+  autoAdvancing = false;
   pairStreak = 0;
+  question = null; options = []; answered = false; answerPool = [];
+  $('answer-feedback').textContent = '';
+  $('answer-input').setAttribute('aria-invalid', 'false');
   clearCelebration();
   stream?.close();
   generation++;
@@ -331,8 +393,13 @@ function start() {
     && ($('letter').value === 'all' || chunk.letter === $('letter').value));
   total = chunks.reduce((sum, chunk) => sum + chunk.count, 0);
   completed = chunks.reduce((sum, chunk) => sum + progress.count(chunk), 0);
-  stream = new ChunkStream(chunks, progress, getJSON, count => { completed += count; });
-  $('retry').hidden = true; $('status').textContent = 'Загружаем слова…'; render();
+  const sourceProgress = reviewing ? { count: () => 0, get: () => new Set(), migrate() {} } : progress;
+  stream = new StudySession(new ChunkStream(reviewing ? shuffle(chunks) : chunks, sourceProgress, async (path, signal) => {
+    const words = await getJSON(path, signal);
+    if (!signal.aborted) answerPool = [...answerPool, ...words].slice(-200);
+    return reviewing ? shuffle(words) : words;
+  }, count => { completed += count; }));
+  $('retry').hidden = true; $('status').setAttribute('data-state', 'loading'); $('status').textContent = 'Загружаем слова…'; render();
   void replenish();
 }
 async function choose(side, id, keyboard = false) {
@@ -353,7 +420,10 @@ async function choose(side, id, keyboard = false) {
   const correct = first.id === id, token = generation;
   sounds.play(correct ? 'match' : 'wrong');
   if (correct) { pairStreak++; celebrate(); }
-  else { pairStreak = 0; clearCelebration(); }
+  else {
+    pairStreak = 0; clearCelebration();
+    for (const word of active) if (word && (word.id === first.id || word.id === id)) stream.mistake(word);
+  }
   feedback = [{ ...first, correct }, { side, id, correct }];
   render();
   $('status').textContent = correct ? 'Верно! Ещё одно слово в копилке.' : 'Пока не совпало. Попробуйте другую пару.';
@@ -364,7 +434,8 @@ async function choose(side, id, keyboard = false) {
   if (correct) {
     const slot = active.findIndex(word => word?.id === id);
     const word = active[slot];
-    completed += progress.add(word.chunk, id); session++; saveLater();
+    if (stream.answer(word)) completed += progress.add(word.chunk, id);
+    saveLater();
     recordStudyDay();
     active[slot] = null;
     right[right.findIndex(word => word?.id === id)] = null;
@@ -428,8 +499,7 @@ function changeSelection() {
 $('level').addEventListener('change', changeSelection);
 $('letter').addEventListener('change', changeSelection);
 $('restart').addEventListener('click', () => {
-  if (!manifest || !window.confirm('Сбросить прогресс этой подборки?')) return;
-  progress.reset(chunks); start();
+  if (manifest) start(true);
 });
 $('retry').addEventListener('click', () => manifest ? replenish() : init());
 init();
