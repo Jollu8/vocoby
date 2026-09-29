@@ -44,6 +44,22 @@ let queuedMatch = null;
 let selected = null, busy = false, generation = 0, session = 0, completed = 0, total = 0;
 let pumping = null, saveScheduled = false, feedback = [];
 const statsKey = 'vocoby-study-stats-v1';
+const selectionKey = 'vocoby-selection-v1';
+function saveSelection() {
+  try {
+    storage.setItem(selectionKey, JSON.stringify({ level: $('level').value, letter: $('letter').value }));
+  } catch { progress.failed = true; }
+}
+function restoreSelection() {
+  try {
+    const selection = JSON.parse(storage.getItem(selectionKey));
+    for (const id of ['level', 'letter']) {
+      if (selection && [...$(id).children].some(option => option.value === selection[id])) {
+        $(id).value = selection[id];
+      }
+    }
+  } catch {}
+}
 $('year').textContent = new Date().getFullYear();
 const mobileLayout = matchMedia('(max-width: 760px)');
 function syncSettingsLayout() { $('collection-settings').open = !mobileLayout.matches; }
@@ -400,11 +416,17 @@ async function init() {
     }
     for (const letter of [...new Set([...manifest.chunks, ...most1000.chunks].map(chunk => chunk.letter))].sort()) $('letter').add(new Option(letter.toUpperCase(), letter));
     if (manifest.levels.includes('A1')) $('level').value = 'A1';
+    restoreSelection();
     start();
   } catch { showError(); }
 }
-$('level').addEventListener('change', () => manifest && start());
-$('letter').addEventListener('change', () => manifest && start());
+function changeSelection() {
+  if (!manifest) return;
+  saveSelection();
+  start();
+}
+$('level').addEventListener('change', changeSelection);
+$('letter').addEventListener('change', changeSelection);
 $('restart').addEventListener('click', () => {
   if (!manifest || !window.confirm('Сбросить прогресс этой подборки?')) return;
   progress.reset(chunks); start();

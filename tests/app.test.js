@@ -210,6 +210,25 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   element('level').listeners.change();
   await wait(20);
   assert.equal(element('progress-count').textContent, '1 / 6', 'B2 progress survives switching');
+  element('level').value = 'A2';
+  element('level').listeners.change();
+  element('letter').value = 'a';
+  element('letter').listeners.change();
+  assert.deepEqual(JSON.parse(data.get('vocoby-selection-v1')), { level: 'A2', letter: 'a' },
+    'selection is saved immediately when changed');
+  await wait(20);
+  await match(left.find(button => !button.disabled));
+  assert.equal(element('progress-count').textContent, '2 / 6');
+  const learnedWords = JSON.parse(data.get('vocoby-chunk-v2:a2-user/chunks/0.json:r1'));
+  elements.clear();
+  await import('../app.js?restore-selection');
+  await wait(20);
+  assert.equal(element('level').value, 'A2');
+  assert.equal(element('letter').value, 'a');
+  assert.equal(element('progress-count').textContent, '2 / 6', 'reload resumes A2 progress');
+  assert.ok(element('english').children.filter(button => !button.disabled)
+    .every(button => !learnedWords.some(id => button.textContent === `en-${id}`)),
+  'learned A2 words are not shown again');
 });
 
 test('the newest English selection stays active during the short match feedback', async () => {
