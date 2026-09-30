@@ -99,3 +99,62 @@ test('five-card board drains retries at the 15-word boundary and next lesson res
   assert.equal(next.done, true);
   assert.ok([...next.words.values()].every(word => !lesson.words.has(lesson.key(word))));
 });
+
+test('pair retry stays among three pairs and helpers cannot change progress or delay completion', async () => {
+  const { lesson, progress, chunk } = fixture(15);
+  let active = Array(5).fill(null);
+  const fill = async () => {
+    for (let slot = 0; slot < active.length; slot++) {
+      if (active[slot]) continue;
+      await lesson.prepare();
+      active[slot] = lesson.take(active);
+    }
+    active = lesson.fillPairSupport(active);
+  };
+  await fill();
+  let hard, attempts = 0, checkedHelper = false;
+  while (active.some(Boolean)) {
+    assert.ok(active.filter(Boolean).length >= 3, 'no obvious one-pair ending');
+    const slot = active.findIndex(word => word && !word.support);
+    assert.notEqual(slot, -1, 'helpers cannot keep a finished lesson alive');
+    const word = active[slot];
+    if (lesson.finished.size === 14 && !hard) {
+      hard = word;
+      lesson.mistake(word);
+    }
+    const helper = active.find(word => word?.support);
+    if (helper && !checkedHelper) {
+      const before = [lesson.turn, lesson.finished.size, lesson.mistakes.size, lesson.retries.length];
+      lesson.mistake(helper);
+      assert.equal(lesson.answer(helper), false);
+      assert.deepEqual([lesson.turn, lesson.finished.size, lesson.mistakes.size, lesson.retries.length], before);
+      checkedHelper = true;
+    }
+    if (lesson.answer(word)) progress.add(chunk, word.id);
+    active[slot] = null;
+    await fill();
+    assert.ok(++attempts <= 16);
+  }
+  assert.ok(checkedHelper);
+  assert.equal(attempts, 16);
+  assert.equal(lesson.finished.size, 15);
+  assert.equal(progress.count(chunk), 15);
+  assert.equal(lesson.mistakes.size, 1);
+  assert.equal(lesson.firstTry, 14);
+});
+
+test('support pairs avoid identical translations and do not invent words in tiny collections', async () => {
+  const { lesson } = fixture(3);
+  await lesson.prepare();
+  const a = lesson.take([]), b = lesson.take([]), c = lesson.take([]);
+  lesson.answer(a); lesson.answer(b);
+  b.ru = c.ru;
+  const board = lesson.fillPairSupport([c, null, null, null, null]);
+  assert.equal(board.filter(Boolean).length, 2);
+  assert.equal(board.find(word => word?.support).id, a.id);
+  assert.equal(new Set(board.filter(Boolean).map(word => word.ru)).size, 2);
+  const tiny = fixture(1).lesson;
+  await tiny.prepare();
+  const only = tiny.take([]);
+  assert.deepEqual(tiny.fillPairSupport([only, null, null, null, null]), [only, null, null, null, null]);
+});

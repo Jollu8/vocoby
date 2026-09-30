@@ -313,7 +313,7 @@ function render() {
 }
 function readyMessage() {
   $('status').setAttribute('data-state', 'ready');
-  if (stream?.done && !active.some(Boolean) && stream.words.size) {
+  if (stream?.done && !active.some(word => word && !word.support) && stream.words.size) {
     finishLesson();
     return;
   }
@@ -341,6 +341,11 @@ function showError() {
   $('retry').hidden = false;
 }
 function syncRight() {
+  if (boardView === 'columns') {
+    active = stream.fillPairSupport(active);
+    if (selected && !active.some(word => word?.id === selected.id)) selected = null;
+    if (!active.some(Boolean)) queuedMatch = null;
+  }
   // Shuffle the whole translation column so a replacement's position isn't a hint.
   right = shuffle(active);
 }
@@ -403,7 +408,7 @@ function start(review = false) {
   void replenish();
 }
 async function choose(side, id, keyboard = false) {
-  if (queuedMatch || feedback.some(item => item.side === side && item.id === id)) return;
+  if (lessonEnded || !active.some(word => word?.id === id) || queuedMatch || feedback.some(item => item.side === side && item.id === id)) return;
   if (!selected || selected.side === side) {
     sounds.play('select');
     selected = selected?.id === id && selected.side === side ? null : { side, id };
@@ -419,14 +424,16 @@ async function choose(side, id, keyboard = false) {
   const first = selected; selected = null; busy = true;
   const correct = first.id === id, token = generation;
   sounds.play(correct ? 'match' : 'wrong');
-  if (correct) { pairStreak++; celebrate(); }
+  if (correct) {
+    if (!active.find(word => word?.id === id)?.support) { pairStreak++; celebrate(); }
+  }
   else {
     pairStreak = 0; clearCelebration();
     for (const word of active) if (word && (word.id === first.id || word.id === id)) stream.mistake(word);
   }
   feedback = [{ ...first, correct }, { side, id, correct }];
   render();
-  $('status').textContent = correct ? 'Верно! Ещё одно слово в копилке.' : 'Пока не совпало. Попробуйте другую пару.';
+  $('status').textContent = correct ? 'Верно!' : 'Пока не совпало. Попробуйте другую пару.';
   await new Promise(resolve => setTimeout(resolve, correct ? 420 : 350));
   if (token !== generation) return;
   feedback = [];
@@ -436,7 +443,7 @@ async function choose(side, id, keyboard = false) {
     const word = active[slot];
     if (stream.answer(word)) completed += progress.add(word.chunk, id);
     saveLater();
-    recordStudyDay();
+    if (!word.support) recordStudyDay();
     active[slot] = null;
     right[right.findIndex(word => word?.id === id)] = null;
     // Synchronous replacement from the small buffer, without waiting for fetch.

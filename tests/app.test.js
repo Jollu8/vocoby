@@ -295,6 +295,26 @@ test('the newest English selection stays active during the short match feedback'
   await new Promise(resolve => setTimeout(resolve, 450));
   assert.equal(element('progress-count').textContent, '3 / 3', 'review does not erase prior progress');
   assert.equal(element('session-count').textContent, 2);
+  // Only w-2 remains a lesson task; the other two pairs are neutral helpers.
+  const matchText = async text => {
+    left.find(button => button.textContent === text).click();
+    right.find(button => button.textContent === text.replace('en-', 'ru-')).click();
+    await new Promise(resolve => setTimeout(resolve, 450));
+  };
+  left.find(button => button.textContent === 'en-2').click();
+  right.find(button => button.textContent === 'ru-0').click();
+  await new Promise(resolve => setTimeout(resolve, 380));
+  await matchText('en-2');
+  assert.equal(element('lesson-summary').hidden, true, 'last mistaken word still needs a retry');
+  assert.equal(left.filter(button => !button.disabled).length, 3, 'retry appears with two support pairs');
+  assert.equal(element('session-count').textContent, 2);
+  await matchText('en-0');
+  assert.equal(element('session-count').textContent, 2, 'helpers never increase the lesson score');
+  assert.equal(left.filter(button => !button.disabled).length, 3);
+  await matchText('en-2');
+  assert.equal(element('lesson-summary').hidden, false, 'helpers do not delay completion');
+  assert.equal(element('session-count').textContent, 3);
+  assert.match(element('lesson-result').textContent, /Слов: 3. 2.*1/);
 });
 
 

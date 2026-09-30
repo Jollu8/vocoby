@@ -167,29 +167,29 @@ body :focus-visible { outline-color: #7fa9d3; }
 /* Exercise options share the collection drawer; practice gets the first screen. */
 .settings-content .exercise-settings { margin: 0; }
 @media (max-width: 760px) {
-  body:has(#game[data-view="choice"], #game[data-view="typing"]) .intro { display: none; }
-  body:has(#game[data-view="choice"], #game[data-view="typing"]) .header { min-height: 48px; padding: 7px 12px; }
-  body:has(#game[data-view="choice"], #game[data-view="typing"]) main { padding: 6px 10px 0; }
-  body:has(#game[data-view="choice"], #game[data-view="typing"]) .workspace { gap: 8px; }
-  body:has(#game[data-view="choice"], #game[data-view="typing"]) .panel { padding-bottom: 6px; }
-  body:has(#game[data-view="choice"], #game[data-view="typing"]) summary { padding: 5px 0; }
-  body:has(#game[data-view="choice"], #game[data-view="typing"]) .progress-heading { margin-top: 0; }
-  body:has(#game[data-view="choice"], #game[data-view="typing"]) .panel progress { margin-top: 4px; height: 4px; }
+  body:has(#game[data-view]) .intro { display: none; }
+  body:has(#game[data-view]) .header { min-height: 48px; padding: 7px 12px; }
+  body:has(#game[data-view]) main { padding: 6px 10px 0; }
+  body:has(#game[data-view]) .workspace { gap: 8px; }
+  body:has(#game[data-view]) .panel { padding-bottom: 6px; }
+  body:has(#game[data-view]) summary { padding: 5px 0; }
+  body:has(#game[data-view]) .progress-heading { margin-top: 0; }
+  body:has(#game[data-view]) .panel progress { margin-top: 4px; height: 4px; }
   .settings-content .exercise-settings { gap: 8px; }
   .settings-content .exercise-settings > div { min-width: 0; }
   /* Keep controls beside the mode tabs instead of stacking two toolbars. */
-  #game:is([data-view="choice"], [data-view="typing"]) {
+  #game[data-view] {
     display: grid; grid-template-columns: minmax(0, 1fr) 44px; column-gap: 6px;
     padding: 10px; align-items: start;
   }
-  #game:is([data-view="choice"], [data-view="typing"]) > * { grid-column: 1 / -1; min-width: 0; }
-  #game:is([data-view="choice"], [data-view="typing"]) .game-header { grid-column: 2; grid-row: 1; margin: 0; }
-  #game:is([data-view="choice"], [data-view="typing"]) .game-header > div:first-child,
-  #game:is([data-view="choice"], [data-view="typing"]) .session-score { display: none; }
-  #game:is([data-view="choice"], [data-view="typing"]) .sound-toggle { width: 44px; height: 44px; }
-  #game:is([data-view="choice"], [data-view="typing"]) .view-switch { grid-column: 1; grid-row: 1; margin: 0; padding: 0; }
-  #game:is([data-view="choice"], [data-view="typing"]) .view-switch button { padding: 4px; font-size: 12px; }
-  #game:is([data-view="choice"], [data-view="typing"]) #lesson-progress { display: block; margin: 5px 0 0; font-size: 11px; line-height: 1.4; }
+  #game[data-view] > * { grid-column: 1 / -1; min-width: 0; }
+  #game[data-view] .game-header { grid-column: 2; grid-row: 1; margin: 0; }
+  #game[data-view] .game-header > div:first-child,
+  #game[data-view] .session-score { display: none; }
+  #game[data-view] .sound-toggle { width: 44px; height: 44px; }
+  #game[data-view] .view-switch { grid-column: 1; grid-row: 1; margin: 0; padding: 0; }
+  #game[data-view] .view-switch button { padding: 4px; font-size: 12px; }
+  #game[data-view] #lesson-progress { display: block; margin: 5px 0 0; font-size: 11px; line-height: 1.4; }
   .prompt-word { margin: 8px 0; padding: 10px; font-size: 24px; line-height: 1.2; }
   .choices { gap: 6px; }
   .choices .word { min-height: 44px; padding: 8px 12px; }
@@ -208,5 +208,25 @@ body :focus-visible { outline-color: #7fa9d3; }
   body:has(#game[data-view="typing"] #answer-input:focus) > footer { display: none; }
 }
 @media (max-width: 760px) and (max-height: 620px) {
-  body:has(#game[data-view="choice"], #game[data-view="typing"]) .header { display: none; }
+  body:has(#game[data-view]) .header { display: none; }
+}
+
+@media (max-width: 760px) {
+  #game[data-view="columns"] .column-labels { margin: 8px 0 6px; }
+  #game[data-view="columns"] .word-column { gap: 6px; }
+  #game[data-view="columns"] .word {
+    height: auto;
+    min-height: clamp(44px, calc((100svh - 280px) / 5), 60px);
+  }
+  #game[data-view="columns"] .status { min-height: 36px; padding-top: 8px; }
+  #game[data-view="columns"] .celebration { top: 56px; }
+}
+/* Small visible viewport, for example with the browser toolbars expanded. */
+@media (max-width: 760px) and (max-height: 520px) {
+  body:has(#game[data-view]) .progress-heading { display: none; }
+  body:has(#game[data-view]) #collection-settings > summary { min-height: 44px; }
+  body:has(#game[data-view]) #collection-settings > summary > span:first-child { display: none; }
+  #game[data-view] #lesson-progress { display: none; }
+  #game[data-view] .prompt-word { padding-block: 6px; }
+  #game[data-view] .choices { gap: 4px; }
 }
