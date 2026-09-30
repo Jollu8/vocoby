@@ -152,8 +152,20 @@ body :focus-visible { outline-color: #7fa9d3; }
 .choices { display: grid; gap: 10px; }
 .choices .word { height: auto; min-height: 58px; }
 .choices .word::after { display: none; }
-#answer-input { width: 100%; min-height: 48px; font: inherit; padding: 12px; border: 1px solid var(--line); border-radius: 9px; margin-bottom: 12px; }
-#answer-input[aria-invalid="true"] { border-color: #d99e89; }
+#answer-input {
+  width: 100%; min-height: 48px; font: inherit; padding: 12px;
+  border: 2px solid #6485a6; border-radius: 9px; margin-bottom: 12px;
+  background: #fff; color: #293e52; caret-color: #285981;
+  box-shadow: 0 2px 5px #294e7314;
+}
+#answer-input::placeholder { color: #62758a; opacity: 1; }
+#answer-input:focus {
+  border-color: #285981; outline: 3px solid #9abfdf; outline-offset: 2px;
+  box-shadow: none;
+}
+#answer-input[aria-invalid="true"] { border-color: #ac4830; background: #fff8f5; }
+#answer-input[aria-invalid="true"]:focus { outline-color: #e6b4a6; }
+#answer-input:disabled { background: #edf2f7; border-color: #bccbd9; box-shadow: none; }
 #answer-feedback { min-height: 24px; font-size: 14px; line-height: 1.5; color: var(--green); }
 @media(prefers-reduced-motion:reduce) { .word.correct { animation: none; } }
 
