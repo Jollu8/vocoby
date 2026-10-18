@@ -1,17 +1,13 @@
-import { shuffle, checkAnswer, makeChoices } from './engine.js';
+import { shuffle, checkAnswer, makeChoices, answerLabel } from './engine.js';
 import { ChunkStream, ProgressStore } from './dictionary.js';
 import { Sounds } from './sounds.js';
 import { StudySession, currentStreak } from './session.js';
+import { COLLECTIONS, COLLECTION_GROUPS, buildCollections } from './collections.js';
 const $ = id => document.getElementById(id);
 function levelLabel(level) {
-  if (level === 'most-1000') return '1000 сложных слов';
   if (level === 'ungraded') return 'Без уровня';
-  if (['A1', 'A2', 'B1', 'B2'].includes(level)) {
-    const count = manifest.chunks.filter(chunk => chunk.level === level)
-      .reduce((sum, chunk) => sum + chunk.count, 0);
-    return `${level} · ${count} слов`;
-  }
-  return level;
+  const collection = collections.get(level);
+  return collection?.group === 'levels' ? `${level} · ${collection.total} слов` : collection?.label || level;
 }
 let storage;
 try { storage = window.localStorage; } catch { storage = { getItem() { throw Error(); }, setItem() { throw Error(); } }; }
@@ -43,7 +39,7 @@ try { const saved = storage.getItem('vocoby-view'); if (['choice', 'typing'].inc
 let advanceTimer, autoAdvancing = false;
 let direction = 'en-ru', tolerance = 'strict', question = null, options = [], answerPool = [], answered = false;
 try { direction = storage.getItem('vocoby-direction') === 'ru-en' ? 'ru-en' : 'en-ru'; tolerance = storage.getItem('vocoby-tolerance') === 'typo' ? 'typo' : 'strict'; } catch {}
-let manifest, most1000, chunks = [], stream, active = Array(5).fill(null), right = Array(5).fill(null);
+let manifest, collections = new Map(), allChunks = [], chunks = [], stream, active = Array(5).fill(null), right = Array(5).fill(null);
 let queuedMatch = null;
 let reviewing = false, lessonEnded = false;
 let selected = null, busy = false, generation = 0, completed = 0, total = 0;
@@ -59,7 +55,7 @@ function restoreSelection() {
   try {
     const selection = JSON.parse(storage.getItem(selectionKey));
     for (const id of ['level', 'letter']) {
-      if (selection && [...$(id).children].some(option => option.value === selection[id])) {
+      if (selection && [...$(id).options].some(option => option.value === selection[id])) {
         $(id).value = selection[id];
       }
     }
@@ -98,7 +94,7 @@ function yesterday(day) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 function updateStats() {
-  const learned = manifest ? [...manifest.chunks, ...most1000.chunks].reduce((sum, chunk) => sum + progress.count(chunk), 0) : 0;
+  const learned = allChunks.reduce((sum, chunk) => sum + progress.count(chunk), 0);
   $('learned-total').textContent = learned;
   $('streak-count').textContent = currentStreak(readStats(), localDay(), yesterday(localDay()));
 }
@@ -124,12 +120,18 @@ async function getJSON(path, signal) {
   return response.json();
 }
 function updateProgress() {
+  const finished = stream?.finished.size || 0;
+  const lessonSize = Math.max(finished, Math.min(stream?.limit || 15,
+    reviewing ? total : total - completed + finished));
   $('progress-count').textContent = `${completed} / ${total}`;
   $('progress').max = total || 1;
   $('progress').value = completed;
   $('collection-count').textContent = `Слов в подборке: ${total}`;
-  $('session-count').textContent = stream?.finished.size || 0;
-  $('lesson-progress').textContent = `${reviewing ? 'Повторение' : 'Тренировка'} · закреплено ${stream?.finished.size || 0} · до 15 слов`;
+  $('collection-description').textContent = collections.get($('level').value)?.description || 'Слова из большой базы WikDict без подтверждённого уровня.';
+  $('session-count').textContent = finished;
+  $('lesson-meter').max = Math.max(1, lessonSize);
+  $('lesson-meter').value = finished;
+  $('lesson-progress').textContent = `${reviewing ? 'Повторение · ' : ''}Закреплено ${finished} из ${lessonSize}`;
   const level = $('level').value === 'all' ? 'Все уровни' : levelLabel($('level').value);
   const letter = $('letter').value === 'all' ? 'A–Z' : $('letter').value.toUpperCase();
   $('selection-summary').textContent = `${level} · ${letter}${boardView === 'columns' ? '' : direction === 'en-ru' ? ' · EN → RU' : ' · RU → EN'}`;
@@ -169,6 +171,8 @@ function setBoardView(view) {
   $('board-viewport').hidden = view !== 'columns';
   $('exercise').hidden = view === 'columns';
   $('exercise-settings').hidden = view === 'columns';
+  $('exercise-direction').hidden = view === 'columns';
+  $('exercise-direction').textContent = direction === 'en-ru' ? 'Английский → Русский' : 'Русский → Английский';
   $('tolerance-field').hidden = view !== 'typing';
   $('choices').hidden = view !== 'choice';
   $('answer-form').hidden = view !== 'typing';
@@ -200,7 +204,7 @@ const choiceButtons = Array.from({ length: 5 }, () => {
   button.addEventListener('click', event => {
     const start = pressed; pressed = null;
     if (event?.detail !== 0 && start && (start.question !== question || start.generation !== generation)) return;
-    submitAnswer(button.textContent);
+    submitAnswer(button.value);
   });
   $('choices').append(button);
   return button;
@@ -214,6 +218,7 @@ $('show-answer').addEventListener('click', () => {
   stream.mistake(question);
   stream.answer(question);
   answered = true;
+  $('answer-feedback').setAttribute('data-state', 'hint');
   $('answer-feedback').textContent = `Перевод: ${question[direction === 'en-ru' ? 'ru' : 'en']}. Слово вернётся через несколько вопросов или в конце тренировки.`;
   render(); $('next-question').focus();
 });
@@ -238,11 +243,12 @@ function renderExercise() {
     options = makeChoices(word, [...active.filter(Boolean), ...answerPool], direction);
     $('answer-input').value = '';
     $('answer-input').setAttribute('aria-invalid', 'false');
+    $('answer-feedback').setAttribute('data-state', '');
     $('answer-feedback').textContent = '';
   }
   const from = direction === 'en-ru' ? 'en' : 'ru';
   const to = from === 'en' ? 'ru' : 'en';
-  $('prompt-word').textContent = question?.[from] || 'Нет слов';
+  $('prompt-word').textContent = question ? from === 'ru' ? answerLabel(question.ru) : question.en : 'Нет слов';
   $('prompt-word').setAttribute('lang', from);
   $('answer-input').setAttribute('lang', to);
   $('show-answer').hidden = boardView !== 'typing' || !question || answered;
@@ -251,7 +257,8 @@ function renderExercise() {
   $('next-question').hidden = boardView === 'choice' || !answered || autoAdvancing;
   choiceButtons.forEach((button, i) => {
     if (!answered) button.className = 'word';
-    button.textContent = options[i] || '';
+    button.value = options[i] || '';
+    button.textContent = to === 'ru' ? answerLabel(button.value) : button.value;
     button.hidden = !question || !options[i];
     button.disabled = !question || answered;
     button.setAttribute('lang', to);
@@ -264,10 +271,11 @@ function submitAnswer(value) {
   sounds.play(result.correct ? 'match' : 'wrong');
   if (!result.correct) {
     stream.mistake(question);
+    $('answer-feedback').setAttribute('data-state', 'error');
     $('answer-feedback').textContent = 'Пока неверно. Попробуйте ещё раз.';
     if (boardView === 'typing') $('answer-input').setAttribute('aria-invalid', 'true');
     else choiceButtons.forEach(button => {
-      button.className = button.textContent === value ? 'word choice-wrong' : 'word';
+      button.className = button.value === value ? 'word choice-wrong' : 'word';
     });
     return;
   }
@@ -278,12 +286,13 @@ function submitAnswer(value) {
   const clean = stream.answer(question);
   if (clean) completed += progress.add(question.chunk, question.id);
   saveLater(); recordStudyDay();
+  $('answer-feedback').setAttribute('data-state', 'success');
   $('answer-feedback').textContent = result.typo ? `Зачтено с опечаткой. Правильно: ${expected}` : `Верно! ${expected}`;
   if (!clean) $('answer-feedback').textContent += ' · Повторим это слово в тренировке.';
   render();
   if (boardView === 'choice') {
     choiceButtons.forEach(button => {
-      if (button.textContent === expected) button.className = 'word choice-correct';
+      if (button.value === expected) button.className = 'word choice-correct';
       else button.className = 'word';
     });
   }
@@ -297,7 +306,7 @@ function render() {
   for (const [side, values] of [['english', active], ['russian', right]]) {
     values.forEach((word, slot) => {
       const button = cards[side][slot];
-      const text = word ? side === 'english' ? word.en : word.ru : '';
+      const text = word ? side === 'english' ? word.en : answerLabel(word.ru) : '';
       if (button.textContent !== text) button.textContent = text;
       button.className = `word${word ? '' : ' empty'}${text.length > 20 ? ' long' : ''}`;
       button.disabled = !word || !!queuedMatch || feedback.some(item => item.side === side && item.id === word.id);
@@ -329,6 +338,9 @@ function finishLesson() {
   $('exercise').hidden = true;
   $('board-viewport').hidden = true;
   $('column-labels').hidden = true;
+  $('summary-words').textContent = stream.words.size;
+  $('summary-first-try').textContent = stream.firstTry;
+  $('summary-review').textContent = stream.mistakes.size;
   $('lesson-result').textContent = `Слов: ${stream.words.size}. ${stream.firstTry} — верно с первой попытки, ${stream.mistakes.size} — повторили после ошибки или подсказки.`;
   $('status').textContent = 'Тренировка завершена. Можно отдохнуть или продолжить.';
   $('continue-lesson').textContent = !reviewing && completed === total ? 'Повторить подборку ↻' : 'Следующая тренировка →';
@@ -386,6 +398,7 @@ function start(review = false) {
   autoAdvancing = false;
   pairStreak = 0;
   question = null; options = []; answered = false; answerPool = [];
+  $('answer-feedback').setAttribute('data-state', '');
   $('answer-feedback').textContent = '';
   $('answer-input').setAttribute('aria-invalid', 'false');
   clearCelebration();
@@ -393,7 +406,7 @@ function start(review = false) {
   generation++;
   pumping = null; selected = null; queuedMatch = null; busy = false; feedback = [];
   active = Array(5).fill(null); right = Array(5).fill(null);
-  const collection = $('level').value === 'most-1000' ? most1000 : manifest;
+  const collection = collections.get($('level').value) || manifest;
   chunks = collection.chunks.filter(chunk => ($('level').value === 'all' || chunk.level === $('level').value)
     && ($('letter').value === 'all' || chunk.letter === $('letter').value));
   total = chunks.reduce((sum, chunk) => sum + chunk.count, 0);
@@ -467,32 +480,23 @@ function playQueuedMatch() {
 async function init() {
   try {
     if (globalThis.navigator?.serviceWorker) void navigator.serviceWorker.register('./sw.js');
-    const [base, most, a1, a2, b1, b2] = await Promise.all([
-      getJSON('data/manifest.json'), getJSON('data/most-1000/manifest.json'),
-      getJSON('data/a1-vocabden/manifest.json'), getJSON('data/a2-user/manifest.json'),
-      getJSON('data/b1-user/manifest.json'), getJSON('data/b2-user/manifest.json')
+    const [base, ...loaded] = await Promise.all([
+      getJSON('data/manifest.json'),
+      ...COLLECTIONS.map(item => getJSON(`data/${item.directory}/manifest.json`)),
     ]);
-    // Replace the legacy A1–B2 collections; keep other levels and their progress keys.
-    const currentChunks = [
-      ...base.chunks.filter(chunk => !['A1', 'A2', 'B1', 'B2'].includes(chunk.level)),
-      ...a1.chunks.map(chunk => ({ ...chunk, path: `a1-vocabden/${chunk.path}` })),
-      ...a2.chunks.map(chunk => ({ ...chunk, path: `a2-user/${chunk.path}` })),
-      ...b1.chunks.map(chunk => ({ ...chunk, path: `b1-user/${chunk.path}` })),
-      ...b2.chunks.map(chunk => ({ ...chunk, path: `b2-user/${chunk.path}` }))
-    ];
-    manifest = { ...base, chunks: currentChunks,
-      total: currentChunks.reduce((sum, chunk) => sum + chunk.count, 0) };
-    most1000 = most;
-    most1000.chunks = most1000.chunks.map(chunk => ({
-      ...chunk, level: 'most-1000', path: `most-1000/${chunk.path}`
-    }));
-    $('total-count').textContent = manifest.total;
-    for (const level of ['most-1000', 'A1', 'A2', 'B1', 'B2', 'ungraded']) {
-      if (level === 'most-1000' || manifest.levels.includes(level)) {
-        $('level').add(new Option(levelLabel(level), level));
+    ({ manifest, collections, allChunks } = buildCollections(base,
+      Object.fromEntries(COLLECTIONS.map((item, index) => [item.id, loaded[index]]))));
+    $('total-count').textContent = allChunks.reduce((sum, chunk) => sum + chunk.count, 0);
+    for (const group of COLLECTION_GROUPS) {
+      const element = document.createElement('optgroup');
+      element.label = group.label;
+      for (const item of collections.values()) {
+        if (item.group === group.id) element.append(new Option(levelLabel(item.id), item.id));
       }
+      if (group.id === 'other' && manifest.levels.includes('ungraded')) element.append(new Option('Без уровня', 'ungraded'));
+      $('level').append(element);
     }
-    for (const letter of [...new Set([...manifest.chunks, ...most1000.chunks].map(chunk => chunk.letter))].sort()) $('letter').add(new Option(letter.toUpperCase(), letter));
+    for (const letter of [...new Set(allChunks.map(chunk => chunk.letter))].sort()) $('letter').add(new Option(letter.toUpperCase(), letter));
     if (manifest.levels.includes('A1')) $('level').value = 'A1';
     restoreSelection();
     start();

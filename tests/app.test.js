@@ -18,6 +18,7 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
         contains(name) { return this.classes.has(name); },
       };
     }
+    get options() { return this.children.flatMap(child => child.children ? child.options : [child]); }
     addEventListener(name, callback) { this.listeners[name] = callback; }
     setAttribute(name, value) { this.attributes[name] = String(value); }
     getAttribute(name) { return this.attributes[name]; }
@@ -33,7 +34,7 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   globalThis.window = { localStorage: { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, value) }, addEventListener() {} };
   globalThis.document = {
     getElementById: element, querySelector: element, addEventListener() {},
-    createElement() { buttonsCreated++; return new Element(); },
+    createElement(tag) { if (tag === 'button') buttonsCreated++; return new Element(); },
   };
   globalThis.matchMedia = () => ({ matches: true, addEventListener() {} });
   globalThis.Option = class { constructor(text, value) { this.text = text; this.value = value; } };
@@ -43,6 +44,7 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   const requested = [];
   globalThis.fetch = async path => ({ ok: true, json: async () => {
     requested.push(path);
+    if (/^data\/(?:c1-core|phrasal-verbs|travel|collocations)\/manifest\.json$/.test(path)) return { total: 0, chunks: [] };
     if (path === 'data/manifest.json') return { total: 30, levels: ['A1', 'A2', 'B1', 'B2'], chunks: [...chunks, { ...chunks[0], level: 'A2', path: 'chunks/legacy-a2.json' }, { ...chunks[0], level: 'B1', path: 'chunks/legacy-b1.json' }, { ...chunks[0], level: 'B2', path: 'chunks/legacy-b2.json' }] };
     if (path === 'data/most-1000/manifest.json') return { total: 6, chunks: [chunks[0]] };
     if (path === 'data/a1-vocabden/manifest.json') return { total: 12, levels: ['A1'], chunks };
@@ -66,6 +68,10 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   assert.ok(requested.some(path => path.startsWith('data/a1-vocabden/chunks/')));
   assert.ok(!requested.some(path => path.startsWith('data/chunks/')), 'legacy A1 is not loaded');
   assert.equal(element('selection-summary').textContent, 'A1 · 12 слов · A–Z');
+  assert.equal(element('lesson-meter').max, 12);
+  assert.equal(element('lesson-meter').value, 0);
+  assert.equal(element('lesson-progress').textContent, 'Закреплено 0 из 12');
+  assert.equal(element('exercise-direction').hidden, true);
   async function match(button) {
     const translation = button.textContent.replace('en-', 'ru-');
     button.click();
@@ -77,6 +83,8 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   Math.random.mock.mockImplementation(() => 0.5);
   await match(left[0]);
   assert.equal(element('progress-count').textContent, '1 / 12');
+  assert.equal(element('lesson-meter').value, 1);
+  assert.equal(element('lesson-meter').max, 12, 'the lesson target stays stable as words are learned');
   assert.equal(left[0].textContent, 'en-0-5');
   assert.deepEqual(left.slice(1).map(button => button.textContent), previousLeft.slice(1));
   assert.ok(right.some((button, slot) => previousRight.includes(button.textContent)
@@ -97,7 +105,7 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   await match(left.find(button => !button.disabled));
   assert.equal(element('progress-count').textContent, '4 / 12');
   assert.equal(buttonsCreated, 15);
-  assert.ok(element('level').children.some(option => option.value === 'most-1000' && option.text === '1000 сложных слов'));
+  assert.ok(element('level').options.some(option => option.value === 'most-1000' && option.text === '1000 сложных слов'));
   element('level').value = 'most-1000';
   element('level').listeners.change();
   await wait(20);
@@ -110,6 +118,9 @@ test('board keeps its ten buttons, shuffles translations, and stays playable dur
   element('letter').listeners.change();
   await wait(20);
   assert.equal(element('progress-count').textContent, '0 / 0');
+  assert.equal(element('lesson-meter').max, 1, 'an empty collection keeps the native meter valid');
+  assert.equal(element('lesson-meter').value, 0);
+  assert.equal(element('lesson-progress').textContent, 'Закреплено 0 из 0');
   element('letter').value = 'all';
   element('level').value = 'all';
   element('level').listeners.change();
@@ -216,6 +227,7 @@ test('the newest English selection stays active during the short match feedback'
         contains(name) { return this.classes.has(name); },
       };
     }
+    get options() { return this.children.flatMap(child => child.children ? child.options : [child]); }
     addEventListener(name, callback) { this.listeners[name] = callback; }
     setAttribute(name, value) { this.attributes[name] = String(value); }
     getAttribute(name) { return this.attributes[name]; }
@@ -236,6 +248,7 @@ test('the newest English selection stays active during the short match feedback'
   const chunks = [{ path: 'chunks/quick.json', revision: 'r1', count: 3, level: 'A1', letter: 'a' }];
   const words = Array.from({ length: 3 }, (_, j) => ({ id: `w-${j}`, en: `en-${j}`, ru: `ru-${j}`, chunk: chunks[0] }));
   globalThis.fetch = async path => ({ ok: true, json: async () => {
+    if (/^data\/(?:c1-core|phrasal-verbs|travel|collocations)\/manifest\.json$/.test(path)) return { total: 0, chunks: [] };
     if (path === 'data/manifest.json') return { total: 3, levels: ['A1', 'B1'], chunks: [{ ...chunks[0], level: 'A1', path: 'chunks/legacy-a1.json' }, { ...chunks[0], level: 'B1', path: 'chunks/legacy-b1.json' }] };
     if (path === 'data/most-1000/manifest.json') return { total: 0, chunks: [] };
     if (path === 'data/a1-vocabden/manifest.json') return { total: 3, levels: ['A1'], chunks };
@@ -335,6 +348,7 @@ test('choice and typing share progress, persist settings and cancel stale pair f
         contains(name) { return this.classes.has(name); },
       };
     }
+    get options() { return this.children.flatMap(child => child.children ? child.options : [child]); }
     addEventListener(name, callback) { this.listeners[name] = callback; }
     setAttribute(name, value) { this.attributes[name] = String(value); }
     getAttribute(name) { return this.attributes[name]; }
@@ -355,6 +369,7 @@ test('choice and typing share progress, persist settings and cancel stale pair f
   const chunks = [{ path: 'chunks/quick.json', revision: 'r1', count: 3, level: 'A1', letter: 'a' }];
   const words = Array.from({ length: 3 }, (_, j) => ({ id: `w-${j}`, en: `en-${j}`, ru: `ru-${j}`, chunk: chunks[0] }));
   globalThis.fetch = async path => ({ ok: true, json: async () => {
+    if (/^data\/(?:c1-core|phrasal-verbs|travel|collocations)\/manifest\.json$/.test(path)) return { total: 0, chunks: [] };
     if (path === 'data/manifest.json') return { total: 3, levels: ['A1', 'B1'], chunks: [{ ...chunks[0], level: 'A1', path: 'chunks/legacy-a1.json' }, { ...chunks[0], level: 'B1', path: 'chunks/legacy-b1.json' }] };
     if (path === 'data/most-1000/manifest.json') return { total: 0, chunks: [] };
     if (path === 'data/a1-vocabden/manifest.json') return { total: 3, levels: ['A1'], chunks };
@@ -374,10 +389,14 @@ test('choice and typing share progress, persist settings and cancel stale pair f
   await wait();
   assert.equal(element('board-viewport').hidden, true);
   assert.equal(element('choices').hidden, false);
+  assert.equal(element('exercise-direction').hidden, false);
+  assert.equal(element('exercise-direction').textContent, 'Английский → Русский');
+  assert.equal(element('lesson-meter').max, 3);
   assert.equal(element('choices').children.filter(button => !button.hidden).length, 3);
   const prompt = element('prompt-word').textContent;
   const choices = element('choices').children;
   choices.find(button => button.textContent !== prompt.replace('en-', 'ru-')).click();
+  assert.equal(element('answer-feedback').getAttribute('data-state'), 'error');
   assert.equal(element('progress-count').textContent, '0 / 3');
   assert.ok(choices.filter(button => !button.hidden).every(button => !button.disabled), 'wrong answer allows another attempt');
   assert.equal(element('next-question').hidden, true);
@@ -390,16 +409,19 @@ test('choice and typing share progress, persist settings and cancel stale pair f
   assert.equal(element('prompt-word').textContent, prompt, 'repeated errors keep the same question');
   const nextPrompt = element('prompt-word').textContent;
   choices.find(button => button.textContent === nextPrompt.replace('en-', 'ru-')).click();
+  assert.equal(element('answer-feedback').getAttribute('data-state'), 'success');
   assert.equal(element('progress-count').textContent, '0 / 3', 'answer after error waits for a clean retry');
   assert.ok(choices.every(button => button.disabled));
   await new Promise(resolve => setTimeout(resolve, 550));
   assert.notEqual(element('prompt-word').textContent, nextPrompt);
+  assert.equal(element('answer-feedback').getAttribute('data-state'), '');
   element('view-typing').click();
   await wait();
   element('direction').value = 'ru-en';
   element('direction').listeners.change();
   await wait();
   assert.equal(element('prompt-word').getAttribute('lang'), 'ru');
+  assert.equal(element('exercise-direction').textContent, 'Русский → Английский');
   const answer = element('prompt-word').textContent.replace('ru-', 'en-');
   const submit = value => {
     element('answer-input').value = value;
@@ -413,6 +435,7 @@ test('choice and typing share progress, persist settings and cancel stale pair f
   submit(answer.replace('en', 'em'));
   assert.equal(element('progress-count').textContent, '0 / 3', 'typo schedules a clean retry');
   assert.match(element('answer-feedback').textContent, /опечаткой/);
+  assert.equal(element('answer-feedback').getAttribute('data-state'), 'success');
   submit(answer);
   assert.equal(element('session-count').textContent, 0, 'repeat submit cannot count twice');
   assert.equal(element('next-question').hidden, true);
@@ -422,6 +445,7 @@ test('choice and typing share progress, persist settings and cancel stale pair f
   assert.equal(document.activeElement, element('answer-input'));
   const revealed = element('prompt-word').textContent;
   element('show-answer').click();
+  assert.equal(element('answer-feedback').getAttribute('data-state'), 'hint');
   assert.equal(element('progress-count').textContent, '0 / 3');
   element('next-question').click();
   await wait();
@@ -434,6 +458,11 @@ test('choice and typing share progress, persist settings and cancel stale pair f
   }
   assert.equal(element('lesson-summary').hidden, false);
   assert.match(element('lesson-result').textContent, /Слов: 3. 1.*2/);
+  assert.equal(element('summary-words').textContent, 3);
+  assert.equal(element('summary-first-try').textContent, 1);
+  assert.equal(element('summary-review').textContent, 2);
+  assert.equal(element('lesson-meter').value, 3);
+  assert.equal(element('lesson-meter').max, 3);
   assert.equal(document.activeElement, element('continue-lesson'));
   assert.equal(element('check-answer').disabled, true);
   assert.equal(data.get('vocoby-view'), 'typing');
@@ -443,6 +472,10 @@ test('choice and typing share progress, persist settings and cancel stale pair f
   await wait();
   assert.equal(element('progress-count').textContent, '3 / 3');
   assert.equal(element('lesson-summary').hidden, true);
+  assert.equal(element('lesson-meter').value, 0);
+  assert.equal(element('lesson-meter').max, 3, 'review includes the learned collection');
+  assert.equal(element('lesson-progress').textContent, 'Повторение · Закреплено 0 из 3');
+  assert.equal(element('answer-feedback').getAttribute('data-state'), '');
   assert.equal(element('check-answer').disabled, false, 'learned words can be reviewed');
   submit(element('prompt-word').textContent.replace('ru-', 'en-'));
   assert.equal(element('progress-count').textContent, '3 / 3', 'review never inflates progress');

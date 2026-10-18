@@ -1,39 +1,89 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#eff5fb"><meta name="description" content="Учите английские слова, находя русские переводы. Короткие тренировки и сохранение прогресса.">
-  <title>Vocoby — слово за словом</title><link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f5f7">
+  <meta name="description" content="Учите английский слово за словом. Находите пары, выбирайте перевод и тренируйте написание — в своём темпе.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Vocoby — слово за словом</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="header"><a class="brand" href="./"><span class="brand-icon">v.</span>vocoby<span class="brand-dot">↗</span></a><span class="header-note">АНГЛИЙСКИЙ · РУССКИЙ</span><span id="local-note" class="local-note">Прогресс на этом устройстве</span></header>
-<main>
-  <section class="intro"><div class="eyebrow"><span></span> МАЛЕНЬКИЕ ШАГИ. БОЛЬШЕ СЛОВ.</div><h1>Слово за словом.<br><span>И всё складывается.</span></h1><p>Находите пары, выбирайте перевод или пишите его сами.<br class="desktop"> Продолжайте в своём темпе.</p></section>
-  <div class="workspace">
-    <aside class="panel" aria-label="Подборка и прогресс">
-      <details id="collection-settings">
-        <summary><span>Подборка и настройки</span><span id="selection-summary">Все уровни · A–Z</span></summary>
-        <div class="settings-content">
-          <div class="section-label">ВАША ПОДБОРКА</div><h2>Что будем учить?</h2>
-          <div class="filter-fields">
-            <div><label for="level">Сложность</label><select id="level"></select></div>
-            <div><label for="letter">Первая буква</label><select id="letter"><option value="all">Весь алфавит</option></select></div>
-          </div>
-          <div id="exercise-settings" class="exercise-settings" hidden><div><label for="direction">Направление перевода</label><select id="direction"><option value="en-ru">Английский → Русский</option><option value="ru-en">Русский → Английский</option></select></div><div id="tolerance-field"><label for="tolerance">Проверка написания</label><select id="tolerance"><option value="strict">Без ошибок</option><option value="typo">Одна опечатка (от 4 букв)</option></select></div></div>
-          <div class="collection-info"><span id="collection-count">Загружаем слова…</span><small>По умолчанию выбрана практическая база A1</small></div>
-          <button id="restart" class="secondary" type="button">Повторить подборку ↻</button>
-          <p class="hint">По 15 слов за тренировку. Повтор подборки сохраняет весь прогресс.</p>
+  <a class="skip-link" href="#game">К тренировке</a>
+  <header class="header">
+    <a class="brand" href="./" aria-label="Vocoby — на главную"><span class="brand-icon" aria-hidden="true">v<span>.</span></span>vocoby</a>
+    <span class="header-note"><span>EN</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg><span>RU</span><span class="header-caption">Английский каждый день</span></span>
+    <span class="save-status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11v1a8 8 0 1 1-4.7-7.3M9 11l3 3 8-8"/></svg><span id="local-note" class="local-note" role="status">Прогресс на этом устройстве</span></span>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <div><div class="eyebrow">МАЛЕНЬКАЯ ПРИВЫЧКА. БОЛЬШЕ ВОЗМОЖНОСТЕЙ.</div><h1 id="page-title">Слово за словом<span>.</span></h1><p>Немного английского. В вашем темпе.</p></div>
+      <div class="lesson-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6m-6 4h6m-6 4h3"/></svg><div><strong>Практика каждый день</strong><span>для маленького шага вперёд</span></div></div>
+    </section>
+    <div class="workspace">
+      <aside class="panel" aria-label="Подборка и прогресс">
+        <div class="collection-card">
+          <details id="collection-settings">
+            <summary><span class="collection-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 2h8M8 10h8m-8 5h5"/></svg></span><span class="summary-copy"><span class="summary-title">Подборка и настройки</span><span id="selection-summary">A1 · Весь алфавит</span></span><svg class="summary-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></summary>
+            <div class="settings-content">
+              <div class="section-label">ВАША ПОДБОРКА</div><h2>Что будем учить?</h2>
+              <div class="filter-fields">
+                <div class="field"><label for="level">Подборка</label><select id="level" aria-describedby="collection-description"></select></div>
+                <div class="field"><label for="letter">Первая буква</label><select id="letter"><option value="all">Весь алфавит</option></select></div>
+              </div>
+              <div id="exercise-settings" class="exercise-settings" hidden>
+                <div class="field"><label for="direction">Направление перевода</label><select id="direction"><option value="en-ru">Английский → Русский</option><option value="ru-en">Русский → Английский</option></select></div>
+                <div id="tolerance-field" class="field"><label for="tolerance">Проверка написания</label><select id="tolerance"><option value="strict">Без ошибок</option><option value="typo">Допускать одну опечатку</option></select><p class="field-note">Для ответов от четырёх букв</p></div>
+              </div>
+              <div class="collection-info"><span id="collection-count">Загружаем слова…</span><p id="collection-description"></p></div>
+              <button id="restart" class="secondary restart-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></svg>Повторить подборку</button>
+              <p class="hint">Повторяйте уже знакомые слова.<br>Ваш прогресс сохранится.</p>
+            </div>
+          </details>
+          <div class="collection-progress"><div class="progress-heading"><span>Изучено в подборке</span><strong id="progress-count">0 / 0</strong></div><progress id="progress" value="0" max="1" aria-label="Прогресс подборки"></progress></div>
         </div>
-      </details>
-      <div class="progress-heading"><span>Собрано в подборке</span><strong id="progress-count">0 / 0</strong></div>
-      <progress id="progress" value="0" max="1" aria-label="Прогресс подборки"></progress>
-      <div class="learning-stats" aria-label="Статистика обучения">
-        <div><strong id="learned-total">0</strong><span>изучено всего</span></div>
-        <div><strong id="streak-count">0</strong><span>дней подряд</span></div>
-      </div>
-    </aside>
-    <section id="game" class="game" aria-label="Тренировка слов"><div class="game-header"><div><span class="section-label">ПРАКТИКА</span><h2 id="game-title">Найдите пару</h2></div><div class="game-actions"><button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="Выключить звуки" title="Выключить звуки"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path class="sound-on" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-off" d="m16 9 6 6m0-6-6 6"/></svg></button><span class="session-score">✦ <span id="session-count">0</span> закреплено</span></div></div><p id="lesson-progress" class="hint">Тренировка · до 15 слов</p><div id="lesson-summary" class="lesson-summary" hidden><h3>Тренировка завершена</h3><p id="lesson-result" role="status"></p><button id="continue-lesson" class="secondary" type="button">Следующая тренировка →</button></div><div id="celebration" class="celebration" role="status" aria-live="polite" aria-atomic="true" hidden></div><div class="view-switch" role="group" aria-label="Режим тренировки"><button id="view-columns" type="button" aria-pressed="true">Найди пары</button><button id="view-choice" type="button" aria-pressed="false">Выбор ответа</button><button id="view-typing" type="button" aria-pressed="false">Орфография</button></div><div id="exercise" hidden><p id="prompt-word" class="prompt-word"></p><div id="choices" class="choices"></div><form id="answer-form" hidden><label for="answer-input">Ваш перевод</label><input id="answer-input" type="text" placeholder="Введите перевод…" maxlength="200" autocomplete="off" autocapitalize="off" enterkeyhint="done" spellcheck="false" aria-describedby="answer-feedback"><button id="check-answer" class="secondary" type="submit">Проверить</button></form><button id="show-answer" class="secondary" type="button" hidden>Показать перевод</button><p id="answer-feedback" role="status" aria-live="polite"></p><button id="next-question" class="secondary" type="button" hidden>Следующее слово →</button></div><div id="column-labels" class="column-labels"><span>EN <small>АНГЛИЙСКИЙ</small></span><span>RU <small>РУССКИЙ</small></span></div><div id="board-viewport" class="board-viewport" tabindex="0" aria-label="Поле слов"><div id="board" class="board"><div id="english" class="word-column"></div><div id="russian" class="word-column"></div></div></div><div id="status" class="status" role="status" aria-live="polite">Загружаем слова…</div><button id="retry" class="secondary" hidden>Попробовать ещё раз</button><div id="game-instructions" class="game-footer">Выберите слово и найдите его перевод.</div></section>
-  </div>
-  <section class="dictionary-note"><div class="note-icon">Aa</div><div><h3>Словарь для ежедневной практики</h3><p><span id="total-count">…</span> слов и переводов. Новые слова из WikDict находятся в подборке «Без уровня». <a href="sources.html">Источники и лицензия CC BY-SA 4.0</a>.</p></div><span class="note-tag">WIKDICT</span></section>
-</main><footer><span>vocoby © <span id="year"></span></span><span>Немного практики каждый день.</span><span class="author-links"><a href="https://t.me/jollu8" target="_blank" rel="noopener noreferrer">Telegram</a><a href="https://github.com/Jollu8" target="_blank" rel="noopener noreferrer">GitHub автора</a></span></footer><script type="module" src="app.js"></script>
-</body></html>
+        <div class="learning-stats" aria-label="Статистика обучения">
+          <div class="stat-card"><span class="stat-icon learned-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/></svg></span><strong id="learned-total">0</strong><span>изучено слов</span></div>
+          <div class="stat-card"><span class="stat-icon streak-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 3c1 5-4 5-4 9 0 1 .5 2 1 2-2-1-3-3-2-5-4 3-5 6-3 9a8 8 0 0 0 13 0c3-5-1-9-5-15Z"/></svg></span><strong id="streak-count">0</strong><span>дней подряд</span></div>
+        </div>
+        <p class="sidebar-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 12 3 3 5-6M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/></svg>Прогресс сохраняется<br>в этом браузере автоматически</p>
+      </aside>
+      <section id="game" class="game" aria-labelledby="game-title" tabindex="-1">
+        <div class="game-header">
+          <div><span class="section-label">ВАША ПРАКТИКА</span><h2 id="game-title">Найдите пару</h2></div>
+          <div class="game-actions"><span class="session-score" aria-label="Закреплено слов"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 12 3 3 5-6"/><circle cx="12" cy="12" r="9"/></svg><span id="session-count">0</span><span class="score-caption">закреплено</span></span><button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="Выключить звуки" title="Выключить звуки"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-5 4H3v6h3l5 4Z"/><path class="sound-on" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-off" d="m16 9 6 6m0-6-6 6"/></svg></button></div>
+        </div>
+        <div class="lesson-tracker"><p id="lesson-progress">Закреплено 0 из 15</p><progress id="lesson-meter" value="0" max="15" aria-label="Прогресс тренировки"></progress></div>
+        <div class="view-switch" role="group" aria-label="Режим тренировки">
+          <button id="view-columns" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="7" rx="2"/><rect x="14" y="4" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span>Найди пары</span></button>
+          <button id="view-choice" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="7" r="3"/><path d="M13 7h8m-8 10h8"/><circle cx="6" cy="17" r="3"/><path d="m4.5 7 1 1 2-2"/></svg><span>Выбор ответа</span></button>
+          <button id="view-typing" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15Z"/><path d="M13 20h8"/></svg><span>Написание</span></button>
+        </div>
+        <p id="game-instructions" class="game-instructions">Выберите слово и найдите его перевод.</p>
+        <div id="celebration" class="celebration" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+        <div id="lesson-summary" class="lesson-summary" hidden>
+          <div class="completion-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="m14 24 7 7 14-15"/></svg></div>
+          <span class="section-label">ЕЩЁ ОДИН ШАГ ВПЕРЁД</span><h3>Отличная работа!</h3><p class="completion-caption">Тренировка завершена. Слова стали ближе.</p>
+          <div class="completion-stats"><div><strong id="summary-words">0</strong><span>слов в тренировке</span></div><div><strong id="summary-first-try">0</strong><span>с первой попытки</span></div><div><strong id="summary-review">0</strong><span>повторили</span></div></div>
+          <p id="lesson-result" class="sr-only" role="status"></p><button id="continue-lesson" class="primary" type="button">Следующая тренировка →</button><p class="completion-footnote">Можно продолжить или вернуться позже.</p>
+        </div>
+        <div id="exercise" class="exercise" hidden>
+          <div class="prompt-card"><span id="exercise-direction" class="exercise-direction">Английский → Русский</span><p id="prompt-word" class="prompt-word" role="heading" aria-level="3"></p><span class="prompt-caption">Как переводится это слово?</span></div>
+          <div id="choices" class="choices" aria-label="Варианты перевода"></div>
+          <form id="answer-form" hidden><label for="answer-input">Ваш перевод</label><div class="answer-field"><input id="answer-input" type="text" placeholder="Введите перевод…" maxlength="200" autocomplete="off" autocapitalize="off" enterkeyhint="done" spellcheck="false" aria-describedby="prompt-word answer-feedback"><button id="check-answer" class="primary" type="submit">Проверить<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></button></div></form>
+          <p id="answer-feedback" role="status" aria-live="polite"></p><button id="show-answer" class="text-button" type="button" hidden>Не помню · Показать перевод</button><button id="next-question" class="primary" type="button" hidden>Следующее слово →</button>
+        </div>
+        <div id="column-labels" class="column-labels"><span><span class="language-code">EN</span>Английский</span><span><span class="language-code">RU</span>Русский</span></div>
+        <div id="board-viewport" class="board-viewport" tabindex="0" aria-label="Поле слов: выберите слово в одной колонке и перевод в другой"><div id="board" class="board"><div id="english" class="word-column"></div><div id="russian" class="word-column"></div></div></div>
+        <div id="status" class="status" role="status" aria-live="polite">Загружаем слова…</div><button id="retry" class="secondary" type="button" hidden>Попробовать ещё раз</button>
+        <div class="game-footer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6m-6 3h6m-6-6c0-2-3-3-3-6a6 6 0 0 1 12 0c0 3-3 4-3 6Z"/></svg>Ошибаться — часть обучения. Сложные слова вернутся на повтор.</div>
+      </section>
+    </div>
+    <section class="dictionary-note" aria-label="О словаре"><span class="note-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 6C9 3 5 3 2 5v15c3-2 7-2 10 1 3-3 7-3 10-1V5c-3-2-7-2-10 1Zm0 0v15"/></svg></span><div><h3>Целый словарь. По одному слову за раз.</h3><p><span id="total-count">…</span> слов и переводов для вашей практики. <a href="sources.html">О словаре и источниках <span aria-hidden="true">↗</span></a></p></div></section>
+  </main>
+  <footer><span>vocoby © <span id="year"></span></span><span class="footer-message">Маленькие шаги складываются в большое.</span><span class="author-links"><a href="https://t.me/jollu8" target="_blank" rel="noopener noreferrer">Telegram</a><a href="https://github.com/Jollu8" target="_blank" rel="noopener noreferrer">GitHub</a></span></footer>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

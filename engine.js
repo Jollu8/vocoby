@@ -7,15 +7,26 @@ export function shuffle(items, random = Math.random) {
   return result;
 }
 
+export function answerLabel(value) {
+  return value.split(/[,;/]/)[0].trim();
+}
+
+export function matchingCardLabels(first, second) {
+  return first.en === second.en ||
+    normalizeAnswer(answerLabel(first.ru)) === normalizeAnswer(answerLabel(second.ru));
+}
+
 // Avoid ambiguous cards: only one instance of a displayed translation or word.
 export function takeNext(queue, active) {
   const index = queue.findIndex(word => !active.some(other =>
-    other && (other.en === word.en || other.ru === word.ru)));
+    other && matchingCardLabels(word, other)));
   return index === -1 ? null : queue.splice(index, 1)[0];
 }
 
 export function normalizeAnswer(value) {
-  return value.normalize('NFC').toLowerCase().replace(/ё/g, 'е').trim().replace(/\s+/g, ' ');
+  return value.normalize('NFC').toLowerCase().replace(/ё/g, 'е')
+    .replace(/[’‘ʼ]/g, "'").replace(/[‐‑–]/g, '-')
+    .replace(/[.,!?…]/g, ' ').trim().replace(/\s+/g, ' ');
 }
 
 export function answerVariants(value) {

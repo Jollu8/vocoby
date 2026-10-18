@@ -158,3 +158,20 @@ test('support pairs avoid identical translations and do not invent words in tiny
   const only = tiny.take([]);
   assert.deepEqual(tiny.fillPairSupport([only, null, null, null, null]), [only, null, null, null, null]);
 });
+
+test('retries and support pairs avoid duplicate visible translations with different answer alternatives', async () => {
+  const { lesson } = fixture(3);
+  await lesson.prepare();
+  const a = lesson.take([]), b = lesson.take([]), c = lesson.take([]);
+  a.ru = 'сдаваться, сдаться';
+  b.ru = 'откладывать, отложить';
+  c.ru = 'откладывать; переносить';
+  lesson.answer(a); lesson.answer(b);
+  const board = lesson.fillPairSupport([c, null, null]);
+  assert.equal(board.filter(Boolean).length, 2);
+  assert.equal(board.find(word => word?.support).id, a.id);
+  lesson.mistake(c); lesson.answer(c);
+  lesson.turn += 3;
+  assert.equal(lesson.take([b]), null, 'a retry waits until an equal visible label leaves the board');
+  assert.equal(lesson.take([]), c);
+});

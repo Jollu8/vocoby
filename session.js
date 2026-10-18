@@ -1,3 +1,5 @@
+import { matchingCardLabels } from './engine.js';
+
 // A lesson admits at most 15 new words; retries do not consume that budget.
 export class StudySession {
   constructor(stream, limit = 15) {
@@ -19,7 +21,7 @@ export class StudySession {
     const exhausted = this.words.size >= this.limit || this.source.done;
     const retry = this.retries.findIndex(item =>
       (item.due <= this.turn || (exhausted && !active.some(word => word && !word.support))) &&
-      !active.some(word => word && (word.en === item.word.en || word.ru === item.word.ru)));
+      !active.some(word => word && matchingCardLabels(word, item.word)));
     if (retry !== -1) return this.retries.splice(retry, 1)[0].word;
     if (this.words.size >= this.limit) return null;
     const word = this.source.take(active);
@@ -52,7 +54,7 @@ export class StudySession {
     for (const word of this.words.values()) {
       if (result.filter(Boolean).length >= 3) break;
       if (!this.finished.has(this.key(word))) continue;
-      if (result.some(other => other && (other.id === word.id || other.en === word.en || other.ru === word.ru))) continue;
+      if (result.some(other => other && (other.id === word.id || matchingCardLabels(other, word)))) continue;
       const slot = result.indexOf(null);
       if (slot === -1) break;
       result[slot] = { ...word, support: true };

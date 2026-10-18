@@ -88,3 +88,32 @@ additional license for the supplied list is asserted here.
 translations from repeated entries are retained. The B2 label follows the
 supplied document. These translations are not attributed to WikDict; no
 additional license for the supplied list is asserted here.
+
+## C1 — editorial starter collection
+
+`c1-core.csv` and `c1-core/chunks/` contain an editorial subset of 200 headwords
+from the C1 section of Oxford University Press's "The Oxford 5000 by CEFR level":
+https://www.oxfordlearnersdictionaries.com/external/pdf/wordlists/oxford-3000-5000/The_Oxford_5000_by_CEFR_level.pdf
+(checked 2026-10-18). Headwords that exactly overlap the current A1–B2 collections
+were excluded at creation. Headword, part of speech and the selected editorial
+sense are documented in `c1-core-source.json`. No Oxford definitions or examples
+are included. No endorsement or CC BY-SA license for Oxford's own materials is
+asserted. The original Russian translations prepared for Vocoby are provided
+under CC BY-SA 4.0.
+
+## Editorial topic collections
+
+`phrasal-verbs.csv` (120 expressions), `travel.csv` (100 entries), and
+`collocations.csv` (100 expressions), with their corresponding chunk directories,
+are editorial selections with original Russian translations prepared for Vocoby.
+The translations are provided under CC BY-SA 4.0. These collections are not
+certified CEFR word lists. Multiple accepted translations describe the selected
+sense rather than all possible meanings of an expression.
+
+Reference materials consulted for usage checks, without copying definitions or
+examples: British Council, "Phrasal verbs"
+(https://learnenglish.britishcouncil.org/free-resources/grammar/b1-b2/phrasal-verbs),
+Cambridge Dictionary (https://dictionary.cambridge.org/), and Cambridge Grammar,
+"Collocation: do or make"
+(https://dictionary.cambridge.org/us/grammar/british-grammar/collocation-do-or-make).
+No endorsement by these publishers is implied.

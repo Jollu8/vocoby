@@ -2,12 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { ChunkStream, ProgressStore } from '../dictionary.js';
+import { answerLabel, normalizeAnswer } from '../engine.js';
 
-for (const directory of ['data', 'data/most-1000', 'data/a1-vocabden', 'data/a2-user', 'data/b1-user', 'data/b2-user']) {
+for (const [directory, expectedTotal] of Object.entries({
+  data: null, 'data/most-1000': 1000, 'data/a1-vocabden': 898, 'data/a2-user': 877,
+  'data/b1-user': 394, 'data/b2-user': 394, 'data/c1-core': 200,
+  'data/phrasal-verbs': 120, 'data/travel': 100, 'data/collocations': 100,
+})) {
 test(`${directory} is playable with bounded loading and unambiguous visible pairs`, async () => {
   const manifest = JSON.parse(await readFile(new URL(`../${directory}/manifest.json`, import.meta.url)));
-  if (directory === 'data') assert.ok(manifest.total >= 30000);
-  else assert.equal(manifest.total, directory === 'data/a1-vocabden' ? 898 : directory === 'data/a2-user' ? 877 : ['data/b1-user', 'data/b2-user'].includes(directory) ? 394 : 1000);
+  if (expectedTotal === null) assert.ok(manifest.total >= 30000);
+  else assert.equal(manifest.total, expectedTotal);
   const progress = new ProgressStore({ getItem() { return null; }, setItem() {} });
   let requests = 0;
   const stream = new ChunkStream(manifest.chunks, progress, async path => {
@@ -20,7 +25,8 @@ test(`${directory} is playable with bounded loading and unambiguous visible pair
       await stream.prepare();
       const next = stream.take(active);
       if (!next) break;
-      assert.ok(!active.some(word => word.en === next.en || word.ru === next.ru));
+      assert.ok(!active.some(word => word.en === next.en ||
+        normalizeAnswer(answerLabel(word.ru)) === normalizeAnswer(answerLabel(next.ru))));
       active.push(next);
     }
     assert.ok(stream.queue.length <= 200);

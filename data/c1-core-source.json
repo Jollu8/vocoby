@@ -1,0 +1,1014 @@
+{
+  "source_url": "https://www.oxfordlearnersdictionaries.com/external/pdf/wordlists/oxford-3000-5000/The_Oxford_5000_by_CEFR_level.pdf",
+  "source_title": "The Oxford 5000 by CEFR level",
+  "retrieved": "2026-10-18",
+  "source_section": "C1, PDF pages 3–8",
+  "selection": "Editorial starter subset of 200 general and professional headwords; not the complete Oxford C1 list.",
+  "unique_headwords": 200,
+  "headwords_sha256": "60ba91b8369dfe5695cce834ab71bd430a0cfb972c212a3d1583a017902bd6fd",
+  "translations": "Original Russian translations by Vocoby. One selected sense per card; dictionary definitions and examples are not copied.",
+  "cefr_note": "Oxford assigns levels to headword and part-of-speech entries. The selected sense and Russian translation are editorial teaching choices, not official Oxford translations.",
+  "normalization": "Lowercase; unique English headwords; no exact headword overlap with the existing A1, A2, B1 or B2 collections at creation.",
+  "editorial_senses": [
+    {
+      "en": "absurd",
+      "part_of_speech": "adjective",
+      "russian_sense": "нелепый"
+    },
+    {
+      "en": "abundance",
+      "part_of_speech": "noun",
+      "russian_sense": "изобилие"
+    },
+    {
+      "en": "accessible",
+      "part_of_speech": "adjective",
+      "russian_sense": "доступный"
+    },
+    {
+      "en": "accomplishment",
+      "part_of_speech": "noun",
+      "russian_sense": "достижение"
+    },
+    {
+      "en": "accordingly",
+      "part_of_speech": "adverb",
+      "russian_sense": "соответственно"
+    },
+    {
+      "en": "accountability",
+      "part_of_speech": "noun",
+      "russian_sense": "подотчётность"
+    },
+    {
+      "en": "accumulate",
+      "part_of_speech": "verb",
+      "russian_sense": "накапливать"
+    },
+    {
+      "en": "acquisition",
+      "part_of_speech": "noun",
+      "russian_sense": "приобретение"
+    },
+    {
+      "en": "adjacent",
+      "part_of_speech": "adjective",
+      "russian_sense": "соседний"
+    },
+    {
+      "en": "adverse",
+      "part_of_speech": "adjective",
+      "russian_sense": "неблагоприятный"
+    },
+    {
+      "en": "affection",
+      "part_of_speech": "noun",
+      "russian_sense": "привязанность, нежная привязанность"
+    },
+    {
+      "en": "albeit",
+      "part_of_speech": "conjunction",
+      "russian_sense": "хотя и"
+    },
+    {
+      "en": "align",
+      "part_of_speech": "verb",
+      "russian_sense": "согласовывать"
+    },
+    {
+      "en": "analogy",
+      "part_of_speech": "noun",
+      "russian_sense": "аналогия"
+    },
+    {
+      "en": "appealing",
+      "part_of_speech": "adjective",
+      "russian_sense": "привлекательный"
+    },
+    {
+      "en": "applicable",
+      "part_of_speech": "adjective",
+      "russian_sense": "применимый"
+    },
+    {
+      "en": "appreciation",
+      "part_of_speech": "noun",
+      "russian_sense": "признательность"
+    },
+    {
+      "en": "arguably",
+      "part_of_speech": "adverb",
+      "russian_sense": "пожалуй"
+    },
+    {
+      "en": "articulate",
+      "part_of_speech": "verb",
+      "russian_sense": "чётко выражать"
+    },
+    {
+      "en": "aspire",
+      "part_of_speech": "verb",
+      "russian_sense": "стремиться"
+    },
+    {
+      "en": "assemble",
+      "part_of_speech": "verb",
+      "russian_sense": "собирать воедино"
+    },
+    {
+      "en": "authentic",
+      "part_of_speech": "adjective",
+      "russian_sense": "подлинный"
+    },
+    {
+      "en": "autonomy",
+      "part_of_speech": "noun",
+      "russian_sense": "самостоятельность"
+    },
+    {
+      "en": "await",
+      "part_of_speech": "verb",
+      "russian_sense": "ожидать"
+    },
+    {
+      "en": "awkward",
+      "part_of_speech": "adjective",
+      "russian_sense": "неловкий"
+    },
+    {
+      "en": "backup",
+      "part_of_speech": "noun",
+      "russian_sense": "резервная копия"
+    },
+    {
+      "en": "benchmark",
+      "part_of_speech": "noun",
+      "russian_sense": "эталон для сравнения"
+    },
+    {
+      "en": "bizarre",
+      "part_of_speech": "adjective",
+      "russian_sense": "причудливый"
+    },
+    {
+      "en": "blend",
+      "part_of_speech": "verb",
+      "russian_sense": "смешивать"
+    },
+    {
+      "en": "boast",
+      "part_of_speech": "verb",
+      "russian_sense": "хвастаться"
+    },
+    {
+      "en": "bolster",
+      "part_of_speech": "verb",
+      "russian_sense": "подкреплять"
+    },
+    {
+      "en": "breakthrough",
+      "part_of_speech": "noun",
+      "russian_sense": "прорыв"
+    },
+    {
+      "en": "burden",
+      "part_of_speech": "noun",
+      "russian_sense": "бремя"
+    },
+    {
+      "en": "cancellation",
+      "part_of_speech": "noun",
+      "russian_sense": "отмена"
+    },
+    {
+      "en": "caution",
+      "part_of_speech": "noun",
+      "russian_sense": "осторожность"
+    },
+    {
+      "en": "clarity",
+      "part_of_speech": "noun",
+      "russian_sense": "ясность"
+    },
+    {
+      "en": "cluster",
+      "part_of_speech": "noun",
+      "russian_sense": "скопление"
+    },
+    {
+      "en": "cognitive",
+      "part_of_speech": "adjective",
+      "russian_sense": "познавательный"
+    },
+    {
+      "en": "collaborate",
+      "part_of_speech": "verb",
+      "russian_sense": "сотрудничать"
+    },
+    {
+      "en": "comparable",
+      "part_of_speech": "adjective",
+      "russian_sense": "сопоставимый"
+    },
+    {
+      "en": "compassion",
+      "part_of_speech": "noun",
+      "russian_sense": "сострадание"
+    },
+    {
+      "en": "compelling",
+      "part_of_speech": "adjective",
+      "russian_sense": "убедительный"
+    },
+    {
+      "en": "competence",
+      "part_of_speech": "noun",
+      "russian_sense": "компетентность"
+    },
+    {
+      "en": "compile",
+      "part_of_speech": "verb",
+      "russian_sense": "составлять сборник"
+    },
+    {
+      "en": "complement",
+      "part_of_speech": "verb",
+      "russian_sense": "дополнять"
+    },
+    {
+      "en": "complexity",
+      "part_of_speech": "noun",
+      "russian_sense": "сложность"
+    },
+    {
+      "en": "compromise",
+      "part_of_speech": "noun",
+      "russian_sense": "компромисс"
+    },
+    {
+      "en": "conceal",
+      "part_of_speech": "verb",
+      "russian_sense": "скрывать"
+    },
+    {
+      "en": "concede",
+      "part_of_speech": "verb",
+      "russian_sense": "неохотно признавать"
+    },
+    {
+      "en": "conscience",
+      "part_of_speech": "noun",
+      "russian_sense": "совесть"
+    },
+    {
+      "en": "consecutive",
+      "part_of_speech": "adjective",
+      "russian_sense": "идущий подряд"
+    },
+    {
+      "en": "consensus",
+      "part_of_speech": "noun",
+      "russian_sense": "общее согласие"
+    },
+    {
+      "en": "consistency",
+      "part_of_speech": "noun",
+      "russian_sense": "последовательность"
+    },
+    {
+      "en": "consolidate",
+      "part_of_speech": "verb",
+      "russian_sense": "укреплять"
+    },
+    {
+      "en": "constraint",
+      "part_of_speech": "noun",
+      "russian_sense": "ограничение"
+    },
+    {
+      "en": "contemplate",
+      "part_of_speech": "verb",
+      "russian_sense": "обдумывать"
+    },
+    {
+      "en": "costly",
+      "part_of_speech": "adjective",
+      "russian_sense": "дорогостоящий"
+    },
+    {
+      "en": "courtesy",
+      "part_of_speech": "noun",
+      "russian_sense": "учтивость"
+    },
+    {
+      "en": "credible",
+      "part_of_speech": "adjective",
+      "russian_sense": "заслуживающий доверия"
+    },
+    {
+      "en": "decisive",
+      "part_of_speech": "adjective",
+      "russian_sense": "решающий"
+    },
+    {
+      "en": "dedicated",
+      "part_of_speech": "adjective",
+      "russian_sense": "преданный делу"
+    },
+    {
+      "en": "deem",
+      "part_of_speech": "verb",
+      "russian_sense": "считать"
+    },
+    {
+      "en": "default",
+      "part_of_speech": "noun",
+      "russian_sense": "настройка по умолчанию"
+    },
+    {
+      "en": "delicate",
+      "part_of_speech": "adjective",
+      "russian_sense": "хрупкий"
+    },
+    {
+      "en": "depict",
+      "part_of_speech": "verb",
+      "russian_sense": "изображать"
+    },
+    {
+      "en": "desirable",
+      "part_of_speech": "adjective",
+      "russian_sense": "желательный"
+    },
+    {
+      "en": "deteriorate",
+      "part_of_speech": "verb",
+      "russian_sense": "ухудшаться"
+    },
+    {
+      "en": "devise",
+      "part_of_speech": "verb",
+      "russian_sense": "разрабатывать"
+    },
+    {
+      "en": "differentiate",
+      "part_of_speech": "verb",
+      "russian_sense": "различать"
+    },
+    {
+      "en": "dignity",
+      "part_of_speech": "noun",
+      "russian_sense": "достоинство"
+    },
+    {
+      "en": "dilemma",
+      "part_of_speech": "noun",
+      "russian_sense": "дилемма"
+    },
+    {
+      "en": "discard",
+      "part_of_speech": "verb",
+      "russian_sense": "отбрасывать"
+    },
+    {
+      "en": "discretion",
+      "part_of_speech": "noun",
+      "russian_sense": "осмотрительность"
+    },
+    {
+      "en": "disrupt",
+      "part_of_speech": "verb",
+      "russian_sense": "нарушать ход работы"
+    },
+    {
+      "en": "distinctive",
+      "part_of_speech": "adjective",
+      "russian_sense": "отличительный"
+    },
+    {
+      "en": "elaborate",
+      "part_of_speech": "adjective",
+      "russian_sense": "тщательно продуманный"
+    },
+    {
+      "en": "eligible",
+      "part_of_speech": "adjective",
+      "russian_sense": "имеющий право на участие"
+    },
+    {
+      "en": "embed",
+      "part_of_speech": "verb",
+      "russian_sense": "встраивать"
+    },
+    {
+      "en": "embody",
+      "part_of_speech": "verb",
+      "russian_sense": "воплощать"
+    },
+    {
+      "en": "empower",
+      "part_of_speech": "verb",
+      "russian_sense": "давать полномочия"
+    },
+    {
+      "en": "encompass",
+      "part_of_speech": "verb",
+      "russian_sense": "охватывать"
+    },
+    {
+      "en": "encouraging",
+      "part_of_speech": "adjective",
+      "russian_sense": "обнадёживающий"
+    },
+    {
+      "en": "endeavour",
+      "part_of_speech": "noun",
+      "russian_sense": "усилие"
+    },
+    {
+      "en": "endure",
+      "part_of_speech": "verb",
+      "russian_sense": "выдерживать"
+    },
+    {
+      "en": "engaging",
+      "part_of_speech": "adjective",
+      "russian_sense": "увлекательный"
+    },
+    {
+      "en": "enrich",
+      "part_of_speech": "verb",
+      "russian_sense": "обогащать"
+    },
+    {
+      "en": "essence",
+      "part_of_speech": "noun",
+      "russian_sense": "суть"
+    },
+    {
+      "en": "evoke",
+      "part_of_speech": "verb",
+      "russian_sense": "вызывать воспоминания"
+    },
+    {
+      "en": "exaggerate",
+      "part_of_speech": "verb",
+      "russian_sense": "преувеличивать"
+    },
+    {
+      "en": "explicit",
+      "part_of_speech": "adjective",
+      "russian_sense": "явно выраженный"
+    },
+    {
+      "en": "fairness",
+      "part_of_speech": "noun",
+      "russian_sense": "справедливость"
+    },
+    {
+      "en": "favourable",
+      "part_of_speech": "adjective",
+      "russian_sense": "благоприятный"
+    },
+    {
+      "en": "flaw",
+      "part_of_speech": "noun",
+      "russian_sense": "изъян"
+    },
+    {
+      "en": "flourish",
+      "part_of_speech": "verb",
+      "russian_sense": "процветать"
+    },
+    {
+      "en": "formulate",
+      "part_of_speech": "verb",
+      "russian_sense": "формулировать"
+    },
+    {
+      "en": "frankly",
+      "part_of_speech": "adverb",
+      "russian_sense": "откровенно говоря"
+    },
+    {
+      "en": "frustrated",
+      "part_of_speech": "adjective",
+      "russian_sense": "раздосадованный"
+    },
+    {
+      "en": "glimpse",
+      "part_of_speech": "noun",
+      "russian_sense": "мимолётный взгляд"
+    },
+    {
+      "en": "grasp",
+      "part_of_speech": "verb",
+      "russian_sense": "схватывать смысл"
+    },
+    {
+      "en": "handy",
+      "part_of_speech": "adjective",
+      "russian_sense": "удобный в использовании"
+    },
+    {
+      "en": "harsh",
+      "part_of_speech": "adjective",
+      "russian_sense": "суровый"
+    },
+    {
+      "en": "heritage",
+      "part_of_speech": "noun",
+      "russian_sense": "культурное наследие"
+    },
+    {
+      "en": "hospitality",
+      "part_of_speech": "noun",
+      "russian_sense": "гостеприимство"
+    },
+    {
+      "en": "humble",
+      "part_of_speech": "adjective",
+      "russian_sense": "скромный"
+    },
+    {
+      "en": "imagery",
+      "part_of_speech": "noun",
+      "russian_sense": "образность"
+    },
+    {
+      "en": "immense",
+      "part_of_speech": "adjective",
+      "russian_sense": "громадный"
+    },
+    {
+      "en": "imminent",
+      "part_of_speech": "adjective",
+      "russian_sense": "надвигающийся"
+    },
+    {
+      "en": "inadequate",
+      "part_of_speech": "adjective",
+      "russian_sense": "не отвечающий требованиям"
+    },
+    {
+      "en": "inappropriate",
+      "part_of_speech": "adjective",
+      "russian_sense": "неуместный"
+    },
+    {
+      "en": "inclusive",
+      "part_of_speech": "adjective",
+      "russian_sense": "открытый для всех"
+    },
+    {
+      "en": "influential",
+      "part_of_speech": "adjective",
+      "russian_sense": "влиятельный"
+    },
+    {
+      "en": "inherent",
+      "part_of_speech": "adjective",
+      "russian_sense": "присущий"
+    },
+    {
+      "en": "inspiration",
+      "part_of_speech": "noun",
+      "russian_sense": "вдохновение"
+    },
+    {
+      "en": "intact",
+      "part_of_speech": "adjective",
+      "russian_sense": "неповреждённый"
+    },
+    {
+      "en": "integral",
+      "part_of_speech": "adjective",
+      "russian_sense": "неотъемлемый"
+    },
+    {
+      "en": "intensify",
+      "part_of_speech": "verb",
+      "russian_sense": "усиливать"
+    },
+    {
+      "en": "intriguing",
+      "part_of_speech": "adjective",
+      "russian_sense": "интригующий"
+    },
+    {
+      "en": "irrelevant",
+      "part_of_speech": "adjective",
+      "russian_sense": "не относящийся к делу"
+    },
+    {
+      "en": "layout",
+      "part_of_speech": "noun",
+      "russian_sense": "компоновка"
+    },
+    {
+      "en": "legacy",
+      "part_of_speech": "noun",
+      "russian_sense": "наследие прошлого"
+    },
+    {
+      "en": "lengthy",
+      "part_of_speech": "adjective",
+      "russian_sense": "продолжительный"
+    },
+    {
+      "en": "lifelong",
+      "part_of_speech": "adjective",
+      "russian_sense": "длящийся всю жизнь"
+    },
+    {
+      "en": "likelihood",
+      "part_of_speech": "noun",
+      "russian_sense": "вероятность"
+    },
+    {
+      "en": "linger",
+      "part_of_speech": "verb",
+      "russian_sense": "задерживаться"
+    },
+    {
+      "en": "literacy",
+      "part_of_speech": "noun",
+      "russian_sense": "грамотность"
+    },
+    {
+      "en": "loyalty",
+      "part_of_speech": "noun",
+      "russian_sense": "верность"
+    },
+    {
+      "en": "mainstream",
+      "part_of_speech": "adjective",
+      "russian_sense": "общепринятый"
+    },
+    {
+      "en": "maintenance",
+      "part_of_speech": "noun",
+      "russian_sense": "техническое обслуживание"
+    },
+    {
+      "en": "mandatory",
+      "part_of_speech": "adjective",
+      "russian_sense": "обязательный"
+    },
+    {
+      "en": "marginal",
+      "part_of_speech": "adjective",
+      "russian_sense": "незначительный"
+    },
+    {
+      "en": "meaningful",
+      "part_of_speech": "adjective",
+      "russian_sense": "содержательный"
+    },
+    {
+      "en": "mentor",
+      "part_of_speech": "noun",
+      "russian_sense": "наставник"
+    },
+    {
+      "en": "merge",
+      "part_of_speech": "verb",
+      "russian_sense": "объединять"
+    },
+    {
+      "en": "milestone",
+      "part_of_speech": "noun",
+      "russian_sense": "важный этап"
+    },
+    {
+      "en": "mindset",
+      "part_of_speech": "noun",
+      "russian_sense": "образ мышления"
+    },
+    {
+      "en": "misleading",
+      "part_of_speech": "adjective",
+      "russian_sense": "вводящий в заблуждение"
+    },
+    {
+      "en": "mitigate",
+      "part_of_speech": "verb",
+      "russian_sense": "смягчать"
+    },
+    {
+      "en": "momentum",
+      "part_of_speech": "noun",
+      "russian_sense": "набранный темп"
+    },
+    {
+      "en": "namely",
+      "part_of_speech": "adverb",
+      "russian_sense": "а именно"
+    },
+    {
+      "en": "niche",
+      "part_of_speech": "noun",
+      "russian_sense": "узкая область деятельности"
+    },
+    {
+      "en": "nonetheless",
+      "part_of_speech": "adverb",
+      "russian_sense": "тем не менее"
+    },
+    {
+      "en": "notable",
+      "part_of_speech": "adjective",
+      "russian_sense": "примечательный"
+    },
+    {
+      "en": "notify",
+      "part_of_speech": "verb",
+      "russian_sense": "уведомлять"
+    },
+    {
+      "en": "novel",
+      "part_of_speech": "adjective",
+      "russian_sense": "новаторский"
+    },
+    {
+      "en": "occasional",
+      "part_of_speech": "adjective",
+      "russian_sense": "случающийся время от времени"
+    },
+    {
+      "en": "offset",
+      "part_of_speech": "verb",
+      "russian_sense": "компенсировать"
+    },
+    {
+      "en": "opt",
+      "part_of_speech": "verb",
+      "russian_sense": "делать выбор"
+    },
+    {
+      "en": "outlook",
+      "part_of_speech": "noun",
+      "russian_sense": "взгляд на будущее"
+    },
+    {
+      "en": "overlook",
+      "part_of_speech": "verb",
+      "russian_sense": "упускать из виду"
+    },
+    {
+      "en": "oversee",
+      "part_of_speech": "verb",
+      "russian_sense": "контролировать работу"
+    },
+    {
+      "en": "persist",
+      "part_of_speech": "verb",
+      "russian_sense": "упорно продолжать"
+    },
+    {
+      "en": "postpone",
+      "part_of_speech": "verb",
+      "russian_sense": "откладывать"
+    },
+    {
+      "en": "precision",
+      "part_of_speech": "noun",
+      "russian_sense": "точность"
+    },
+    {
+      "en": "predecessor",
+      "part_of_speech": "noun",
+      "russian_sense": "предшественник"
+    },
+    {
+      "en": "predominantly",
+      "part_of_speech": "adverb",
+      "russian_sense": "преимущественно"
+    },
+    {
+      "en": "prestigious",
+      "part_of_speech": "adjective",
+      "russian_sense": "престижный"
+    },
+    {
+      "en": "presumably",
+      "part_of_speech": "adverb",
+      "russian_sense": "предположительно"
+    },
+    {
+      "en": "prioritize",
+      "part_of_speech": "verb",
+      "russian_sense": "расставлять приоритеты"
+    },
+    {
+      "en": "profound",
+      "part_of_speech": "adjective",
+      "russian_sense": "глубокий"
+    },
+    {
+      "en": "prominent",
+      "part_of_speech": "adjective",
+      "russian_sense": "видный"
+    },
+    {
+      "en": "readily",
+      "part_of_speech": "adverb",
+      "russian_sense": "с готовностью"
+    },
+    {
+      "en": "reasoning",
+      "part_of_speech": "noun",
+      "russian_sense": "ход рассуждений"
+    },
+    {
+      "en": "reassure",
+      "part_of_speech": "verb",
+      "russian_sense": "успокаивать"
+    },
+    {
+      "en": "recipient",
+      "part_of_speech": "noun",
+      "russian_sense": "получатель"
+    },
+    {
+      "en": "reflection",
+      "part_of_speech": "noun",
+      "russian_sense": "размышление"
+    },
+    {
+      "en": "regain",
+      "part_of_speech": "verb",
+      "russian_sense": "возвращать утраченное"
+    },
+    {
+      "en": "relevance",
+      "part_of_speech": "noun",
+      "russian_sense": "уместность"
+    },
+    {
+      "en": "reliability",
+      "part_of_speech": "noun",
+      "russian_sense": "надёжность"
+    },
+    {
+      "en": "renowned",
+      "part_of_speech": "adjective",
+      "russian_sense": "прославленный"
+    },
+    {
+      "en": "resemble",
+      "part_of_speech": "verb",
+      "russian_sense": "быть похожим"
+    },
+    {
+      "en": "resilience",
+      "part_of_speech": "noun",
+      "russian_sense": "стойкость"
+    },
+    {
+      "en": "respectively",
+      "part_of_speech": "adverb",
+      "russian_sense": "в соответствующем порядке"
+    },
+    {
+      "en": "resume",
+      "part_of_speech": "verb",
+      "russian_sense": "возобновлять"
+    },
+    {
+      "en": "retrieve",
+      "part_of_speech": "verb",
+      "russian_sense": "извлекать"
+    },
+    {
+      "en": "robust",
+      "part_of_speech": "adjective",
+      "russian_sense": "устойчивый"
+    },
+    {
+      "en": "sceptical",
+      "part_of_speech": "adjective",
+      "russian_sense": "скептический"
+    },
+    {
+      "en": "scope",
+      "part_of_speech": "noun",
+      "russian_sense": "охват"
+    },
+    {
+      "en": "scrutiny",
+      "part_of_speech": "noun",
+      "russian_sense": "пристальное изучение"
+    },
+    {
+      "en": "seemingly",
+      "part_of_speech": "adverb",
+      "russian_sense": "на первый взгляд"
+    },
+    {
+      "en": "selective",
+      "part_of_speech": "adjective",
+      "russian_sense": "избирательный"
+    },
+    {
+      "en": "simultaneously",
+      "part_of_speech": "adverb",
+      "russian_sense": "одновременно"
+    },
+    {
+      "en": "solely",
+      "part_of_speech": "adverb",
+      "russian_sense": "исключительно"
+    },
+    {
+      "en": "straightforward",
+      "part_of_speech": "adjective",
+      "russian_sense": "простой и понятный"
+    },
+    {
+      "en": "strive",
+      "part_of_speech": "verb",
+      "russian_sense": "прилагать усилия"
+    },
+    {
+      "en": "substantial",
+      "part_of_speech": "adjective",
+      "russian_sense": "существенный"
+    },
+    {
+      "en": "subtle",
+      "part_of_speech": "adjective",
+      "russian_sense": "едва заметный"
+    },
+    {
+      "en": "supportive",
+      "part_of_speech": "adjective",
+      "russian_sense": "оказывающий поддержку"
+    },
+    {
+      "en": "surpass",
+      "part_of_speech": "verb",
+      "russian_sense": "превосходить"
+    },
+    {
+      "en": "thoughtful",
+      "part_of_speech": "adjective",
+      "russian_sense": "заботливый"
+    },
+    {
+      "en": "threshold",
+      "part_of_speech": "noun",
+      "russian_sense": "порог"
+    },
+    {
+      "en": "thrive",
+      "part_of_speech": "verb",
+      "russian_sense": "успешно развиваться"
+    },
+    {
+      "en": "timely",
+      "part_of_speech": "adjective",
+      "russian_sense": "своевременный"
+    },
+    {
+      "en": "transparency",
+      "part_of_speech": "noun",
+      "russian_sense": "прозрачность"
+    },
+    {
+      "en": "underlying",
+      "part_of_speech": "adjective",
+      "russian_sense": "лежащий в основе"
+    },
+    {
+      "en": "unprecedented",
+      "part_of_speech": "adjective",
+      "russian_sense": "беспрецедентный"
+    },
+    {
+      "en": "vague",
+      "part_of_speech": "adjective",
+      "russian_sense": "расплывчатый"
+    },
+    {
+      "en": "verify",
+      "part_of_speech": "verb",
+      "russian_sense": "проверять достоверность"
+    },
+    {
+      "en": "viable",
+      "part_of_speech": "adjective",
+      "russian_sense": "жизнеспособный"
+    },
+    {
+      "en": "vibrant",
+      "part_of_speech": "adjective",
+      "russian_sense": "полный жизни"
+    },
+    {
+      "en": "willingness",
+      "part_of_speech": "noun",
+      "russian_sense": "готовность"
+    }
+  ]
+}

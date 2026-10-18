@@ -20,6 +20,18 @@ test('one typo allows insertion, deletion, replacement and transposition, but pr
   }
 });
 
+test('short phrases accept punctuation and mobile keyboard typography while keeping all words required', () => {
+  for (const [answer, expected] of [
+    ['The bill, please!', 'the bill please'],
+    ['Счёт, пожалуйста.', 'счёт пожалуйста'],
+    ['catch someone’s eye', "catch someone's eye"],
+    ['free wi‑fi', 'free wi-fi'],
+  ]) assert.deepEqual(checkAnswer(answer, expected), { correct: true, typo: false });
+  assert.equal(checkAnswer('please', 'the bill please').correct, false);
+  assert.equal(checkAnswer('счёт', 'счёт пожалуйста').correct, false);
+  assert.equal(checkAnswer('put on', 'put off').correct, false);
+});
+
 test('choices are distinct and exclude alternative translations of the same prompt in either direction', () => {
   const word = { en: 'hello', ru: 'привет, здравствуйте' };
   const pool = [word, { en: 'hello', ru: 'добрый день' }, { en: 'hi', ru: 'привет' },

@@ -32,6 +32,8 @@ export class ProgressStore {
     return ids.size - before;
   }
   migrate(chunk, words) {
+    // New curated collections start independently of the old device-wide list.
+    if (chunk.migrateLegacy === false) return;
     const key = this.key(chunk);
     // A persisted empty record means this chunk was deliberately reset.
     let existing = false;

@@ -9,6 +9,33 @@ from scripts.build_dictionary import build
 
 
 class ShippedDictionaryTests(unittest.TestCase):
+    def test_new_collections_rebuild_and_keep_their_source_metadata(self):
+        data = Path(__file__).resolve().parents[1] / 'data'
+        expected = {'c1-core': (200, 'C1'), 'phrasal-verbs': (120, 'ungraded'),
+                    'travel': (100, 'ungraded'), 'collocations': (100, 'ungraded')}
+        for name, (count, level) in expected.items():
+            with self.subTest(collection=name):
+                with (data / f'{name}.csv').open(encoding='utf-8') as stream:
+                    rows = list(csv.DictReader(stream))
+                self.assertEqual(len(rows), count)
+                self.assertEqual(len({row['en'] for row in rows}), count)
+                self.assertTrue(all(row['level'] == level and row['source'] and row['ru'] for row in rows))
+                manifest = json.loads((data / name / 'manifest.json').read_text())
+                with tempfile.TemporaryDirectory() as directory:
+                    self.assertEqual(build(data / f'{name}.csv', directory), manifest)
+                    for item in manifest['chunks']:
+                        self.assertEqual((data / name / item['path']).read_bytes(),
+                                         (Path(directory) / item['path']).read_bytes())
+        with (data / 'c1-core.csv').open(encoding='utf-8') as stream:
+            c1 = {row['en']: row['ru'] for row in csv.DictReader(stream)}
+        provenance = json.loads((data / 'c1-core-source.json').read_text())
+        self.assertEqual(provenance['headwords_sha256'],
+                         hashlib.sha256(('\n'.join(sorted(c1)) + '\n').encode()).hexdigest())
+        self.assertEqual({row['en']: row['russian_sense'] for row in provenance['editorial_senses']}, c1)
+        for name in ['a1-vocabden', 'a2-user', 'b1-user', 'b2-user']:
+            with (data / f'{name}.csv').open(encoding='utf-8') as stream:
+                self.assertFalse(set(c1) & {row['en'] for row in csv.DictReader(stream)})
+
     def test_user_a2_preserves_all_words_and_translations(self):
         data = Path(__file__).resolve().parents[1] / 'data'
         entries = re.findall(r'^\d+\.\s+(.+?)\s+—\s+(.+?)\s*$',

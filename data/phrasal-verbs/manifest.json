@@ -1,0 +1,121 @@
+{
+  "version": 2,
+  "total": 120,
+  "levels": [
+    "ungraded"
+  ],
+  "chunks": [
+    {
+      "level": "ungraded",
+      "letter": "a",
+      "path": "chunks/ungraded-a-001.json",
+      "count": 1,
+      "revision": "b1c2dc4fa6d6f806"
+    },
+    {
+      "level": "ungraded",
+      "letter": "b",
+      "path": "chunks/ungraded-b-001.json",
+      "count": 9,
+      "revision": "dc40005997a9a869"
+    },
+    {
+      "level": "ungraded",
+      "letter": "c",
+      "path": "chunks/ungraded-c-001.json",
+      "count": 19,
+      "revision": "dafaa5aefbe94847"
+    },
+    {
+      "level": "ungraded",
+      "letter": "d",
+      "path": "chunks/ungraded-d-001.json",
+      "count": 4,
+      "revision": "6390d634648331b2"
+    },
+    {
+      "level": "ungraded",
+      "letter": "e",
+      "path": "chunks/ungraded-e-001.json",
+      "count": 2,
+      "revision": "e440fc86abb8bb83"
+    },
+    {
+      "level": "ungraded",
+      "letter": "f",
+      "path": "chunks/ungraded-f-001.json",
+      "count": 6,
+      "revision": "b877609450da9e00"
+    },
+    {
+      "level": "ungraded",
+      "letter": "g",
+      "path": "chunks/ungraded-g-001.json",
+      "count": 21,
+      "revision": "cba146b98a9f7049"
+    },
+    {
+      "level": "ungraded",
+      "letter": "h",
+      "path": "chunks/ungraded-h-001.json",
+      "count": 6,
+      "revision": "1664870cdf25e41e"
+    },
+    {
+      "level": "ungraded",
+      "letter": "k",
+      "path": "chunks/ungraded-k-001.json",
+      "count": 1,
+      "revision": "474241315e65e8bc"
+    },
+    {
+      "level": "ungraded",
+      "letter": "l",
+      "path": "chunks/ungraded-l-001.json",
+      "count": 11,
+      "revision": "18e9eacc1dc2fc6d"
+    },
+    {
+      "level": "ungraded",
+      "letter": "m",
+      "path": "chunks/ungraded-m-001.json",
+      "count": 4,
+      "revision": "244507d131e6a15f"
+    },
+    {
+      "level": "ungraded",
+      "letter": "p",
+      "path": "chunks/ungraded-p-001.json",
+      "count": 12,
+      "revision": "a3b0e2991d7cb9f8"
+    },
+    {
+      "level": "ungraded",
+      "letter": "r",
+      "path": "chunks/ungraded-r-001.json",
+      "count": 3,
+      "revision": "d7a5f42030032a8f"
+    },
+    {
+      "level": "ungraded",
+      "letter": "s",
+      "path": "chunks/ungraded-s-001.json",
+      "count": 7,
+      "revision": "66f8b42ff65e2e71"
+    },
+    {
+      "level": "ungraded",
+      "letter": "t",
+      "path": "chunks/ungraded-t-001.json",
+      "count": 11,
+      "revision": "bd8bb752053a0827"
+    },
+    {
+      "level": "ungraded",
+      "letter": "w",
+      "path": "chunks/ungraded-w-001.json",
+      "count": 3,
+      "revision": "4f4723e51eb5f02a"
+    }
+  ]
+}
